@@ -5,7 +5,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
 - **09.28.**
     - [Feladatspecifikáció](./FELADAT.md)
     - [Adatbázis séma](./SEMA.md)
-    - [Kattintható demó](../docs/index.html)
+    - [Kattintható demó](https://keny3r.github.io/BME-VIK-mernokinfo-onlab-2-Adminisztracios-rendszer-fejlesztopedagogusoknak/profile.html)
     - [Ütemterv](.)
 - **10.05.**
     - MSSQL környezet kialakítása és fejlesztői eszközök konfigurálása

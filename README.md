@@ -7,5 +7,5 @@ A féléves feladatomként egy olyan webes adminisztrációs alkalmazást kész�
 - [Ütemterv](./dokumentacio/UTEMTERV.md)
 - [Feladatspecifikáció](./dokumentacio/FELADAT.md)
 - [Adatbázis séma](./dokumentacio/SEMA.md)
-- [Kattintható demó](./docs/index.html)
+- [Kattintható demó](https://keny3r.github.io/BME-VIK-mernokinfo-onlab-2-Adminisztracios-rendszer-fejlesztopedagogusoknak/profile.html)
 - [AI eszközök és promptok](./dokumentacio/promptok/)
