@@ -4,7 +4,8 @@ A féléves feladatomként egy olyan webes adminisztrációs alkalmazást kész�
 
 ## Dokumentáció
 
-- [Ütemterv](./docs/UTEMTERV.md)
-- [Feladatspecifikáció](./docs/FELADAT.md)
-- [Adatbázis séma](./docs/SEMA.md)
-- [AI eszközök és promptok](./docs/promptok/)
+- [Ütemterv](./dokumentacio/UTEMTERV.md)
+- [Feladatspecifikáció](./dokumentacio/FELADAT.md)
+- [Adatbázis séma](./dokumentacio/SEMA.md)
+- [Kattintható demó](./docs/index.html)
+- [AI eszközök és promptok](./dokumentacio/promptok/)

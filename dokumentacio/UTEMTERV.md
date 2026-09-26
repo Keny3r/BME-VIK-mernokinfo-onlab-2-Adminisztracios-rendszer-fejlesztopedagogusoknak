@@ -5,7 +5,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
 - **09.28.**
     - [Feladatspecifikáció](./FELADAT.md)
     - [Adatbázis séma](./SEMA.md)
-    - [Kattintható demó](../kattinthato_demo/index.html)
+    - [Kattintható demó](../docs/index.html)
     - [Ütemterv](.)
 - **10.05.**
     - MSSQL környezet kialakítása és fejlesztői eszközök konfigurálása
