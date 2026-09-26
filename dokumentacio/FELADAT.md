@@ -2,7 +2,8 @@
 
 - **Tárgy:** BME VIK Mérnökinformatikus képzés, Önálló laboratórium 2
 - **Név:** Frink Dávid
-- **Konzulens:** TODO
+- **Konzulens:** Albert István
+- **Tanszék:** AUT - Automatizálási és Alkalmazott Informatikai Tanszék
 
 ---
 
@@ -48,13 +49,13 @@ A tanév végén a pedagógusnak szöveges értékelést kell adnia a tanuló fe
 ## 3. Nemfunkcionális követelmények
 
 ### 3.1. Adatvédelem és jogi megfelelőség (GDPR)
-- **Különleges adatok kezelése:** A tanulási nehézségre és egészségügyi/pedagógiai felmérésekre vonatkozó adatok a GDPR 9. cikke alapján különleges kategóriájú személyes adatnak minősülnek. A tárolásuk és kezelésük fokozott védelmet igényel.
+- **Különleges adatok kezelése:** A tanulási nehézségre és egészségügyi/pedagógiai felmérésekre vonatkozó adatok a [GDPR 9. cikke alapján](https://gdpr-text.com/hu/read/article-9/) különleges kategóriájú személyes adatnak minősülnek. A tárolásuk és kezelésük fokozott védelmet igényel.
 - **Titkosítás:** Kötelező a titkosított adatátvitel (HTTPS/TLS 1.3) a kliens és a szerver között, valamint a szenzitív adatok és biztonsági mentések nyugalmi titkosítása (encryption at rest, pl. AES-256).
 - **Adatminimalizálás és hozzáférés-védelem:** Csak a fejlesztéshez elengedhetetlenül szükséges adatok rögzítése engedélyezett. Az adatokhoz kizárólag a jogosult pedagógus férhet hozzá.
 
 ### 3.2. Biztonság és jogosultságkezelés
 - Szerepkör-alapú hozzáférés-vezérlés (RBAC): minimálisan *Adminisztrátor* és *Fejlesztőpedagógus* szerepkörök elválasztása.
-- Biztonságos hitelesítés (jelszó-hashelés modern algoritmussal, pl. Argon2 vagy bcrypt), munkamenet-kezelés és védelem a gyakori sebezhetőségek ellen (OWASP Top 10: XSS, CSRF, SQL/NoSQL Injection).
+- Biztonságos hitelesítés, munkamenet-kezelés és védelem a gyakori sebezhetőségek ellen (OWASP Top 10).
 
 ### 3.3. Felhasználhatóság és ergonómia
 - **Reszponzív felület:** Asztali gépen és táblagépen egyaránt kényelmesen kezelhető nézetek (a foglalkozások alatti gyors jelenléti és tevékenység-adminisztráció érdekében).
@@ -67,10 +68,9 @@ A tanév végén a pedagógusnak szöveges értékelést kell adnia a tanuló fe
 ### 4.1. In Scope (A félév során megvalósuló elemek)
 - Önálló prototípus és tesztkörnyezet kiépítése szintetikus (anonimizált/mock) adatokkal.
 - A fenti funkcionális követelmények teljes körű lefejlesztése: tanulók kezelése, szakvélemények rögzítése, célhierarchia kezelése, órai naplózás és év végi összesítő riport generálása.
-- A fejlesztői tesztelés és az önálló laboratóriumi dokumentáció elkészítése.
+- Az önálló laboratóriumi dokumentáció elkészítése.
 
 ### 4.2. Out of Scope (A félév keretein kívül eső elemek)
 - **Éles üzembe állítás:** A félév végén egy működőképes, bemutatható, de még nem élesített alkalmazás jön létre; éles oktatási intézményi bevezetés nem történik valós tanulói adatokkal.
-- **Hivatalos KRÉTA API-integráció:** A hivatalos KRÉTA interfészek zárt jellege miatt a rendszer független webalkalmazásként működik; a kétirányú automatikus KRÉTA-szinkronizáció nem része a féléves feladatnak.
 - **Központi e-napló hitelesítés:** Digitális aláírással ellátott, hivatalos állami törzskönyvi szintű archiválás biztosítása.
-- **Natív mobilapplikáció:** Csak reszponzív webalkalmazás készül, iOS/Android natív app nem.
+- **Natív mobilapplikáció:** Csak reszponzív webalkalmazás készül, iOS/Android natív app nem. (Amennyiben felmerül az igény, akkor a modern PWA irányt tekintsük át.)
