@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="hu">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BTMN Admin - Új cél felvétele</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<!-- Háttér alkalmazás -->
+		<div class="drawer" style="filter: blur(0.5px); pointer-events: none; opacity: 0.6">
+			<aside class="drawer-side">
+				<div class="sidebar-brand">BTMN Admin</div>
+				<ul class="sidebar-menu">
+					<li>
+						<a href="profile.html" class="sidebar-link"><span>Profil</span></a>
+					</li>
+					<li>
+						<a href="children.html" class="sidebar-link"><span>Gyerekek</span></a>
+					</li>
+					<li>
+						<a href="sessions.html" class="sidebar-link"><span>Foglalkozások</span></a>
+					</li>
+					<li>
+						<a href="development-areas.html" class="sidebar-link active"
+							><span>Fejlesztési területek</span></a
+						>
+					</li>
+				</ul>
+			</aside>
+			<div class="drawer-content">
+				<header class="navbar"><a href="profile.html" class="navbar-brand">BTMN Admin</a></header>
+				<main class="main-container">
+					<div class="content-wrapper"><h1 class="card-title">Fejlesztési területek</h1></div>
+				</main>
+			</div>
+		</div>
+
+		<!-- Felugró ablak (ItemEditModal alapján) -->
+		<div
+			class="modal-overlay"
+			onclick="if (event.target === this) window.location.href = 'development-areas.html';"
+		>
+			<div class="modal-sm modal-box">
+				<div class="modal-header">
+					<h3 class="modal-title">Új cél felvétele</h3>
+					<a href="development-areas.html" class="btn btn-square btn-ghost btn-sm" title="Bezárás"
+						>&times;</a
+					>
+				</div>
+
+				<div class="modal-body">
+					<div class="form-control">
+						<label class="label-text">Fejlesztési cél megnevezése *</label>
+						<input
+							type="text"
+							class="input"
+							placeholder="pl. Szókincs bővítése"
+							value="Auditív figyelem és differenciálás"
+							autofocus
+						/>
+					</div>
+				</div>
+
+				<div class="modal-action">
+					<a href="development-areas.html" class="btn btn-ghost">Mégse</a>
+					<a href="development-areas.html" class="btn btn-primary">Mentés</a>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

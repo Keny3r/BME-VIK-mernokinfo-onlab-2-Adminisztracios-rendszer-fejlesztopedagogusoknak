@@ -1,0 +1,43 @@
+## Határidők és feladatok
+
+Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként is értelmezhetőek.
+
+- **09.28.**
+    - [Feladatspecifikáció](./FELADAT.md)
+    - [Adatbázis séma](./SEMA.md)
+    - [Kattintható demó](../kattinthato_demo/index.html)
+    - [Ütemterv](.)
+- **10.05.**
+    - MSSQL környezet kialakítása és fejlesztői eszközök konfigurálása
+    - ASP.NET Core és EF Core felállítása
+    - Migrációs és seed folyamatok kidolgozása
+- **10.12.**
+    - Autentikáció és autorizáció alapjainak felállítása (ASP.NET Core Identity)
+    - Adatbázis-séma leképezése ORM rétegbe
+    - Global Query filterek beállítása és konfigurálása
+- **10.19.**
+    - Üzleti logikai réteg specifikálása, kialakítása és implementációja
+- **10.26.**
+    - Autentikáció és jogosultságkezelés tesztelése
+    - Üzleti logika integrációs tesztelése és az adatszeparáció verifikációja
+- **11.02.**
+    - Blazor Web App architektúra kialakítása (Server és Interactive komponensek szétválasztása)
+    - A frontend komponensek és a backend szolgáltatások összekapcsolása, alapvető állapotkezelés
+- **11.09.**
+    - Főbb UI nézetek implementálása a prototípus alapján
+    - Kliensoldali validációk bekötése és a felületi integrációból fakadó modell-korrekciók elvégzése
+- **11.16.**
+    - Fizetési szolgáltató (pl. [Stripe](https://stripe.com)) integrációs lehetőségeinek felmérése
+    - Stripe Checkout folyamat bekötése és a Webhook endpoint lekezelése a backend oldalon (aláírás-ellenőrzéssel)
+- **11.23.**
+    - Teljes körű rendszerintegráció (Blazor + Üzleti logika + MSSQL + Fizetés)
+    - Végponttól-végpontig terjedő (End-to-End) felhasználói folyamatok tesztelése és dokumentálása
+- **11.30.**
+    - Automatizált tesztfuttatás konszolidálása (CI / regressziós ellenőrzések)
+    - Refaktorálási időszak, esetleges elmaradások rendezése
+- **12.07.**
+    - Felhasználói felület finomhangolása (UX/UI reszponzivitás, esetleges hibák kezelése)
+    - Féléves beszámoló kidolgozása
+- **12.14.**
+    - A féléves beszámoló dokumentáció véglegesítése
+    - Prezentáció elkészítése

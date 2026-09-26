@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="hu">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BTMN Admin - Új tanév felvétele</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<!-- Háttér alkalmazás -->
+		<div class="drawer" style="filter: blur(0.5px); pointer-events: none; opacity: 0.6">
+			<aside class="drawer-side">
+				<div class="sidebar-brand">BTMN Admin</div>
+				<ul class="sidebar-menu">
+					<li>
+						<a href="profile.html" class="sidebar-link active"><span>Profil</span></a>
+					</li>
+					<li>
+						<a href="children.html" class="sidebar-link"><span>Gyerekek</span></a>
+					</li>
+					<li>
+						<a href="sessions.html" class="sidebar-link"><span>Foglalkozások</span></a>
+					</li>
+					<li>
+						<a href="development-areas.html" class="sidebar-link"
+							><span>Fejlesztési területek</span></a
+						>
+					</li>
+				</ul>
+			</aside>
+			<div class="drawer-content">
+				<header class="navbar"><a href="profile.html" class="navbar-brand">BTMN Admin</a></header>
+				<main class="main-container">
+					<div class="content-wrapper"><h1 class="card-title">Profil</h1></div>
+				</main>
+			</div>
+		</div>
+
+		<!-- Felugró ablak (ItemEditModal alapján tanév hozzáadásához) -->
+		<div
+			class="modal-overlay"
+			onclick="if (event.target === this) window.location.href = 'profile.html';"
+		>
+			<div class="modal-sm modal-box">
+				<div class="modal-header">
+					<h3 class="modal-title">Új tanév felvétele</h3>
+					<a href="profile.html" class="btn btn-square btn-ghost btn-sm" title="Bezárás">&times;</a>
+				</div>
+
+				<div class="modal-body">
+					<div class="form-control">
+						<label class="label-text">Tanév megnevezése *</label>
+						<input
+							type="text"
+							class="input"
+							placeholder="pl. 2024/2025"
+							value="2025/2026"
+							autofocus
+						/>
+					</div>
+
+					<div style="margin-top: 0.5rem">
+						<label
+							style="
+								display: flex;
+								align-items: center;
+								gap: 0.5rem;
+								font-size: 0.85rem;
+								cursor: pointer;
+							"
+						>
+							<input type="checkbox" checked style="accent-color: var(--color-primary)" />
+							<span>A(z) 2024/2025 tanév gyerekeinek másolása</span>
+						</label>
+					</div>
+				</div>
+
+				<div class="modal-action">
+					<a href="profile.html" class="btn btn-ghost">Mégse</a>
+					<a href="profile.html" class="btn btn-primary">Mentés</a>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

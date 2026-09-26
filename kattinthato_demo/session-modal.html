@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="hu">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BTMN Admin - Új foglalkozás felvétele</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<!-- Háttér alkalmazás -->
+		<div class="drawer" style="filter: blur(0.5px); pointer-events: none; opacity: 0.6">
+			<aside class="drawer-side">
+				<div class="sidebar-brand">BTMN Admin</div>
+				<ul class="sidebar-menu">
+					<li>
+						<a href="profile.html" class="sidebar-link"><span>Profil</span></a>
+					</li>
+					<li>
+						<a href="children.html" class="sidebar-link"><span>Gyerekek</span></a>
+					</li>
+					<li>
+						<a href="sessions.html" class="sidebar-link active"><span>Foglalkozások</span></a>
+					</li>
+					<li>
+						<a href="development-areas.html" class="sidebar-link"
+							><span>Fejlesztési területek</span></a
+						>
+					</li>
+				</ul>
+			</aside>
+			<div class="drawer-content">
+				<header class="navbar"><a href="profile.html" class="navbar-brand">BTMN Admin</a></header>
+				<main class="main-container">
+					<div class="content-wrapper"><h1 class="card-title">Foglalkozások</h1></div>
+				</main>
+			</div>
+		</div>
+
+		<!-- Felugró ablak (Modal Overlay) -->
+		<div
+			class="modal-overlay"
+			onclick="if (event.target === this) window.location.href = 'sessions.html';"
+		>
+			<div class="modal-box">
+				<div class="modal-header">
+					<h3 class="modal-title">Új foglalkozás felvétele</h3>
+					<a href="sessions.html" class="btn btn-square btn-ghost btn-sm" title="Bezárás"
+						>&times;</a
+					>
+				</div>
+
+				<div class="modal-body">
+					<!-- 1. Dátum szekció -->
+					<div class="card" style="background-color: var(--color-base-200); padding: 1rem">
+						<div class="form-control" style="max-width: 240px">
+							<label class="label-text">Foglalkozás dátuma *</label>
+							<input type="date" class="input" value="2024-10-18" />
+						</div>
+					</div>
+
+					<!-- 2. Résztvevő gyermekek szekció -->
+					<div class="card" style="background-color: var(--color-base-200); padding: 1rem">
+						<div class="card-header-row" style="margin-bottom: 0.75rem">
+							<h4 style="font-size: 1rem; font-weight: 600">Résztvevő gyermekek</h4>
+							<button type="button" class="btn btn-primary btn-sm">+ Gyermek hozzáadása</button>
+						</div>
+						<ul class="divide-list">
+							<li class="divide-item">
+								<div class="flex items-center gap-2">
+									<span class="badge badge-xs font-semibold badge-neutral">3.a</span>
+									<span class="font-medium">Kovács Ádám</span>
+								</div>
+								<button
+									type="button"
+									class="btn btn-square btn-ghost text-error btn-xs"
+									title="Eltávolítás"
+								>
+									&times;
+								</button>
+							</li>
+							<li class="divide-item">
+								<div class="flex items-center gap-2">
+									<span class="badge badge-xs font-semibold badge-neutral">3.a</span>
+									<span class="font-medium">Nagy Bence</span>
+								</div>
+								<button
+									type="button"
+									class="btn btn-square btn-ghost text-error btn-xs"
+									title="Eltávolítás"
+								>
+									&times;
+								</button>
+							</li>
+						</ul>
+					</div>
+
+					<!-- 3. Fejlesztési mátrix szekció (behúzva a szintek szerint) -->
+					<div class="card" style="background-color: var(--color-base-200); padding: 1rem">
+						<h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem">
+							Fejlesztési mátrix
+						</h4>
+						<table
+							class="table"
+							style="
+								background-color: var(--color-base-100);
+								border-radius: var(--radius-field);
+								overflow: hidden;
+								border: 1px solid var(--color-base-300);
+							"
+						>
+							<tbody>
+								<!-- Terület (depth 0) -->
+								<tr>
+									<td>
+										<div class="flex items-center gap-2" style="padding-left: 0rem">
+											<input type="checkbox" checked style="accent-color: var(--color-primary)" />
+											<span class="badge badge-sm font-semibold badge-neutral">Terület</span>
+											<span class="font-bold">Kognitív képességek, figyelem és emlékezet</span>
+										</div>
+									</td>
+								</tr>
+								<!-- Cél (depth 1) -->
+								<tr>
+									<td>
+										<div class="flex items-center gap-2" style="padding-left: 1.5rem">
+											<input type="checkbox" checked style="accent-color: var(--color-primary)" />
+											<span class="badge badge-outline badge-sm">Cél</span>
+											<span class="font-medium"
+												>Figyelem és koncentráció tartósságának növelése</span
+											>
+										</div>
+									</td>
+								</tr>
+								<!-- Eszköz (depth 2) -->
+								<tr>
+									<td>
+										<div class="flex items-center gap-2" style="padding-left: 3rem">
+											<input type="checkbox" checked style="accent-color: var(--color-primary)" />
+											<span class="badge badge-ghost badge-sm">Eszköz</span>
+											<span>Dobble kártyajáték</span>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- 4. Leírás szekció -->
+					<div class="card" style="background-color: var(--color-base-200); padding: 1rem">
+						<div class="form-control">
+							<label class="label-text">Óra leírása (opcionális)</label>
+							<textarea
+								class="textarea"
+								rows="2"
+								placeholder="Egyedi fejlesztési tevékenységek, rendhagyó eszközök vagy egyéb megjegyzések az óráról..."
+							>
+Páros feladatok, figyelem és együttműködés fejlesztése játékos keretek között.</textarea>
+						</div>
+					</div>
+
+					<!-- 5. KRÉTA órai munka szekció -->
+					<div
+						class="card"
+						style="
+							background-color: var(--color-base-200);
+							padding: 1rem;
+							border: 1px dashed var(--color-primary);
+						"
+					>
+						<div class="card-header-row" style="margin-bottom: 0.5rem">
+							<span class="label-text" style="color: var(--color-primary)">KRÉTA órai munka</span>
+							<button type="button" class="btn btn-primary btn-sm">Másolás vágólapra</button>
+						</div>
+						<div
+							style="
+								font-size: 0.85rem;
+								color: var(--color-base-content);
+								background-color: var(--color-base-100);
+								padding: 0.65rem 0.85rem;
+								border-radius: var(--radius-field);
+								border: 1px solid var(--color-base-300);
+							"
+						>
+							Figyelem- és koncentrációfejlesztés, valamint szókincsbővítés és fogalomalkotás
+							játékos feladatokkal.
+						</div>
+					</div>
+				</div>
+
+				<div class="modal-action">
+					<a href="sessions.html" class="btn btn-ghost">Mégse</a>
+					<a href="sessions.html" class="btn btn-primary">Mentés</a>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
