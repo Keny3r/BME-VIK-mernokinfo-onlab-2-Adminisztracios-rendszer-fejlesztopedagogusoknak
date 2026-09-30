@@ -52,6 +52,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Gyermekek kiválasztása
             - Fejlesztési terv generálása gomb
             - PDF generátor modal
+- Ezen a ponton mérlegelném a [szakértői vélemények beolvasása funkció](./FUNKCIOK.md#szakértői-vélemények-beolvasása) implementálását.
 - **11.09.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 1
         - A cél az, hogy fel lehessen venni egy foglalkozást és az megfelelően kerüljön be az adatbázisba. A megvalósulási számokkal és a mélyebb üzleti logikával még nem foglalkozunk.

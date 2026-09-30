@@ -98,6 +98,17 @@ A fejlesztőfoglalkozások strukturált naplózására használt eszköz. A KRÉ
 - A cél az, hogy a pedagógusnak csak a PDF-ek legenerálásakor kelljen fizetnie, még ismeretlen összeget minden PDF után.
 - [Non blocker](#non-blocker) A szöveges értékelések teljes, fizetéssel ellátott, körbetesztelt folyamata.
 
+### [Szakértői vélemények](./DEFINICIOK.md#szakvélemény) beolvasása
+
+A szakértői vélemények papír alapn érkeznek az iskolákba.
+
+Nincsen pdf, digitális adat vagy bármilyen egyéb integrációs felület.
+
+Az adminisztráció felgyorsítására érdekében elképzelhető egy OCR alapú beolvasási folyamat, ami a gyermekek adatait beolvassa a kapott szakértői véleményből mobil kamerával (a webes app mobilon is fut), vagy feltöltött képből. Ugyanakkor ezt a technológiát ki kell kísérletezni az EUs szabályok figyelembe vétele mellett (GDPR, AI act).
+
+Az implementációját a teljes fejlesztési terv előállítása után [fontolnám meg](#non-blocker).
+- Ezen a ponton vagy a foglalkozások naplózásával vagy ezzel haladnék tovább a hátralévő idő, a funkció hasznossága és a jogi overhead mérlegelésével.
+
 ## Non blocker
 
 Olyan funkció, amely elsősorban kényelmi szerepet lát el, nem érdemes miatta késleltetni a többi feladatot.
