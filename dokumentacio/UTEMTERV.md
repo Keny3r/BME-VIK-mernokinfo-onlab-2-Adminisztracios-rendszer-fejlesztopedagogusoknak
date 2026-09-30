@@ -8,36 +8,87 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
     - [Kattintható demó](https://keny3r.github.io/BME-VIK-mernokinfo-onlab-2-Adminisztracios-rendszer-fejlesztopedagogusoknak/profile.html)
     - [Ütemterv](.)
 - **10.05.**
-    - MSSQL környezet kialakítása és fejlesztői eszközök konfigurálása
-    - ASP.NET Core és EF Core felállítása
-    - Migrációs és seed folyamatok kidolgozása
+    - Landing page és [Bejelentkezés](./FUNKCIOK.md#bejelentkezés) implementálása
+        - Modellek és Service osztályok
+            - AuthService
+        - Fontend
+            - Landing page
+            - Bejelentkezés
 - **10.12.**
-    - Autentikáció és autorizáció alapjainak felállítása (ASP.NET Core Identity)
-    - Adatbázis-séma leképezése ORM rétegbe
-    - Global Query filterek beállítása és konfigurálása
+    - [Profil](./FUNKCIOK.md#profil) implementálása
+        - Modellek és Service osztályok
+            - FejlesztopedagogusService
+                - A user - fejlesztőpedagógus összerendelés tesztelése
+            - TanevService
+            - IskolaService
+            - SzakvelemenyKiallitoService
+        - Frontend
+            - Profil menü
 - **10.19.**
-    - Üzleti logikai réteg specifikálása, kialakítása és implementációja
+    - [Fejlesztési repertoár](./FUNKCIOK.md#fejlesztési-repertoár) menü implementálása
+        - Service osztályok
+            - FejlesztesiTeruletService
+            - FejlesztesiCelService
+            - FejlesztesiEszkozService
+        - Frontend
+            - Fejlesztési repertoár menü
 - **10.26.**
-    - Autentikáció és jogosultságkezelés tesztelése
-    - Üzleti logika integrációs tesztelése és az adatszeparáció verifikációja
+    - [Gyermekek](./FUNKCIOK.md#gyermekek) menü implementálása
+        - A cél az, hogy a gyermekek adatai megfelelően kerüljenek be az adatbázisba minél kevesebb UI lépésben. A fejlesztési tervek generálásával még nem foglalkozunk.
+        - Service osztályok
+            - GyermekService
+            - SzakvelemenyService
+            - TanevGyermekService
+            - FejlesztesiTervService
+            - A teanant szeparáció tesztelése
+        - Frontend
+            - Gyermekek menü (a gyermekek felvétele a tanévhez tartalmazza a [fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) elkészítését segítő elemet is)
 - **11.02.**
-    - Blazor Web App architektúra kialakítása (Server és Interactive komponensek szétválasztása)
-    - A frontend komponensek és a backend szolgáltatások összekapcsolása, alapvető állapotkezelés
+    - [Fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) generálása
+        - A cél, hogy megkapjuk az első kész fejlesztési tervet a tesztadatokból
+        - PDF generátor endpoint létrehozása
+            - FejlesztesiTervPdfService
+        - Frontend
+            - Gyermekek kiválasztása
+            - Fejlesztési terv generálása gomb
+            - PDF generátor modal
 - **11.09.**
-    - Főbb UI nézetek implementálása a prototípus alapján
-    - Kliensoldali validációk bekötése és a felületi integrációból fakadó modell-korrekciók elvégzése
+    - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 1
+        - A cél az, hogy fel lehessen venni egy foglalkozást és az megfelelően kerüljön be az adatbázisba. A megvalósulási számokkal és a mélyebb üzleti logikával még nem foglalkozunk.
+        - Service osztályok
+            - FoglalkozasService
+        - Frontend
+            - Foglalkozások menü, komplex modalok nélkül.
+        - Manuális tesztelés
 - **11.16.**
-    - Fizetési szolgáltató (pl. [Stripe](https://stripe.com)) integrációs lehetőségeinek felmérése
-    - Stripe Checkout folyamat bekötése és a Webhook endpoint lekezelése a backend oldalon (aláírás-ellenőrzéssel)
+    - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 2
+        - A cél az, hogy a már felvehető foglalkozásokat bővítsük a megvalósulási számokkal, legyen másolható KRÉTA órai munka, 
+        - Service osztályok
+            - FoglalkozasService bővítése
+            - MegvalosulasService
+        - Frontend
+            - Teljes, megvalósulási számokkal segítséget nyújtó modal a foglalkozások menüben
+        - Manuális tesztelés
 - **11.23.**
-    - Teljes körű rendszerintegráció (Blazor + Üzleti logika + MSSQL + Fizetés)
-    - Végponttól-végpontig terjedő (End-to-End) felhasználói folyamatok tesztelése és dokumentálása
+    - [Szöveges értékelés](./DEFINICIOK.md#szöveges-értékelés) generátor implementálása
+        - Service osztályok
+            - SzovegesErtekelesService
+            - SzovegesErtekelesPdfService
+        - A cél az, hogy le tudjuk generálni az első szöveges értékeléseket a teszt adatokból
+            - PDF generátor endpoint létrehozása
 - **11.30.**
-    - Automatizált tesztfuttatás konszolidálása (CI / regressziós ellenőrzések)
-    - Refaktorálási időszak, esetleges elmaradások rendezése
+    - [Fizetési Flow](./FUNKCIOK.md#fizetési-flow) implementálása
+        - Stripe bekötése
+        - Stripe integrációja a PDF generátor endpointokkal
+            - FizetesService
+        - Frontend
+            - Fizetési flow a PDF generátorok menüiben.
+        - Manuális tesztelés
 - **12.07.**
-    - Felhasználói felület finomhangolása (UX/UI reszponzivitás, esetleges hibák kezelése)
-    - Féléves beszámoló kidolgozása
+    - Manuális end-to-end tesztek írása
+        - Deployment előtti checklist írása.
+            - Persze nem fogjuk élesíteni az appot, de egy valós projektnél fontos lenne.
+    - Automata end-to-end tesztek írása a legkritikusabb funkciókra (bejelentkezés, pdf generálás)
 - **12.14.**
-    - A féléves beszámoló dokumentáció véglegesítése
+    - Önlab dokumentáció elkészítése
     - Prezentáció elkészítése

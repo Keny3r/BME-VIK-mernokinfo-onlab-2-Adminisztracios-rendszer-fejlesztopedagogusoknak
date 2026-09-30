@@ -4,9 +4,22 @@ modell: gemini 3.8 flash - high effort
 dátum: 2026.09.24.
 ---
 
+<skill>
+
+## Design Principles
+
+**UI Minimalism, KISS, DRY, YAGNI & Modularity Invariant**:
+    - **KISS & Minimalist UI**: Never add redundant, verbose, or trivial subtitles/descriptions below obvious titles and section headers. Keep the UI clean, focused, and free of visual clutter.
+    - **Info Tooltip Pattern**: If and only if extra, non-obvious guidance is genuinely required for a section or input, provide it via a discrete info icon.
+    - **DRY & Zero Data Redundancy**: Avoid presenting or duplicating the same data in multiple places on the same screen.
+    - **YAGNI**: Do not build speculative UI components, placeholder metadata fields, or superfluous widgets that serve no immediate administrative purpose.
+    - **Visual Consistency & Uniform Design Language**: Navigation links and corresponding page header titles must use unified iconography. Section containers must share identical structural hierarchy and daisyUI styling.
+
+</skill>
+
 <user>
 
-# Rendszertervezési Specifikáció és Képernyőterv
+# UI Specifikáció és Képernyőterv
 
 ## 1. A feladat célja
 
@@ -136,15 +149,17 @@ A felület két fő állandó szerkezeti egységből áll:
 
 </user>
 
-<skill>
+<user>
+Egy csomó extra adat szerepel a frontenden, tele van bloat-tal
+A legtöbb oldalon a gombok mindenre ugyanazt a szövegű modal-t hozzák fel
+Nem kell, hogy szerkeszthető legyen vagy legyen benne js logika, csak legalább, ha valamire nincs modal, akkor ne egy másik jöjjön be
+Akkor vannak keresések meg szűrők, amiket kifejezetten nem szeretnék belerakni a demo-ba
+Tehát úgy legalább a felét el kéne tűntetni és egy kicsit pl. arra fókuszálni, hogy hogyan fogjuk behúzni a fában a sorokat
+</user>
 
-## Design Principles
-
-**UI Minimalism, KISS, DRY, YAGNI & Modularity Invariant**:
-    - **KISS & Minimalist UI**: Never add redundant, verbose, or trivial subtitles/descriptions below obvious titles and section headers. Keep the UI clean, focused, and free of visual clutter.
-    - **Info Tooltip Pattern**: If and only if extra, non-obvious guidance is genuinely required for a section or input, provide it via a discrete info icon.
-    - **DRY & Zero Data Redundancy**: Avoid presenting or duplicating the same data in multiple places on the same screen.
-    - **YAGNI**: Do not build speculative UI components, placeholder metadata fields, or superfluous widgets that serve no immediate administrative purpose.
-    - **Visual Consistency & Uniform Design Language**: Navigation links and corresponding page header titles must use unified iconography. Section containers must share identical structural hierarchy and daisyUI styling.
-
-</skill>
+<user>
+Már csak két dolog hiányzik a demóból
+Az egyik az, hogy a gyerekek listája legyen multi selectelhető
+A másik pedig, hogy a kiválaszott egyerekekhez az új gyerek gombtól balra lehessen Egyéni Fejlesztési Területeket és Fejlesztés Megvalósulása dokumentumokat generálni
+Egyelőre itt csak egy-egy olyan modal jelenjen meg, ahol ott van, hogy generálás költsége: X Ft és egy megerősítő gomb meg egy mégse gomb
+</user>
