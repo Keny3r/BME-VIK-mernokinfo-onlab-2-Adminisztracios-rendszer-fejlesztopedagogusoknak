@@ -19,30 +19,7 @@ Ezek a gyermekek többnyire az összes tanórán részt vesznek, és a tanórák
 
 ---
 
-## 2. Funkcionális követelmények
-
-### 2.1. Tanulói nyilvántartás és szakértői vélemények kezelése
-- Tanulók alapadatainak (név, iskola, osztály, anyja neve, születési helye és ideje) nyilvántartása.
-- A Pedagógiai Szakszolgálat által kiállított szakértői vélemények iktatása (érvényességi időtartam, kötelező heti óraszám, kontrollvizsgálat határideje).
-
-### 2.2. Egyéni Fejlesztési Tervek (EFT)
-A fejlesztőpedagógusok a tanév elején Egyéni Fejlesztési Tervet készítenek minden tanulóhoz. Bár erre nincs merev jogszabályi formanyomtatvány, a folyamat jól modellezhető egy háromszintű hierarchiával:
-1. **Fejlesztési területek:** A szakszolgálati vélemény által kijelölt kategóriák (pl. vizuális figyelem, finommotorika, nyelvi készségek).
-2. **Fejlesztési célok:** A fejlesztőpedagógus által az adott gyermekre szabott konkrét részcélok (pl. helyes ceruzafogás kialakítása, auditív differenciálás fejlesztése).
-3. **Fejlesztési eszközök és módszerek:** Azok a gyakorlatok, feladattípusok és eszközök, amelyeket a pedagógus a célok elérése érdekében tervez alkalmazni.
-
-### 2.3. Fejlesztő foglalkozások naplózása
-A fejlesztő munka nem a Nemzeti alaptanterv (NAT) kötött tanmenete szerint halad, ezért a standard KRÉTA-struktúra nem alkalmas a valós célok követésére. A rendszer az alábbi naplózási folyamatot teszi lehetővé:
-- Egyéni vagy csoportos foglalkozás létrehozása dátummal és résztvevőkkel.
-- A tényleges foglalkozás összerendelése a tervezett célokkal:
-  - előre definiált eszköz/tevékenység kiválasztásával, vagy
-  - ad-hoc órai téma megadásával (pl. aktuális tantárgyi lemaradás pótlása), majd annak utólagos hozzárendelésével a fejlesztési célokhoz.
-
-### 2.4. Értékelés és analitika (Fejlesztés eredménye)
-A tanév végén a pedagógusnak szöveges értékelést kell adnia a tanuló fejlődéséről a szakvéleményben kijelölt területek mentén.
-- **Automatikus munkanapló-összesítés:** Kimutatás arról, hogy az adott gyermeknél melyik fejlesztési terület és cél hány foglalkozáson, milyen óraszámban került elő.
-- **Értékelési sablon és javaslattétel:** A rendszer a naplózott aktivitások alapján előre strukturált szöveges értékelési vázat generál, amelyet a pedagógus véglegesíthet.
-- **Nyomtatható/exportálható riport:** Szülők, szaktanárok és a szakszolgálat számára átadható fejlődési lap exportálása (PDF formátumban).
+## 2. [Funkciók](./FUNKCIOK.md)
 
 ---
 
