@@ -42,9 +42,8 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Gyermekek
             - Szakvélemények
             - Fejlesztési Tervek
-                - Építeni fog az előző hét fejlesztési fájára
         - Frontend
-            - Gyermekek menü (a gyermekek felvétele a tanévhez tartalmazza a [fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) elkészítését segítő elemet is)
+            - Gyermekek menü
         - Elvárt eredmény
             - A demóban látható Gyermekek menü elkészül (PDF generálás nélkül)
 - **11.02.**
