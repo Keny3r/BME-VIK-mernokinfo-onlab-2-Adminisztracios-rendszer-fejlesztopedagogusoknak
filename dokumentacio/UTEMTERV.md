@@ -9,74 +9,77 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
     - [Ütemterv](.)
 - **10.05.**
     - Landing page és [Bejelentkezés](./FUNKCIOK.md#bejelentkezés) implementálása
-        - Modellek és Service osztályok
-            - AuthService
         - Fontend
             - Landing page
             - Bejelentkezés
 - **10.12.**
     - [Profil](./FUNKCIOK.md#profil) implementálása
-        - Modellek és Service osztályok
-            - FejlesztopedagogusService
-                - A user - fejlesztőpedagógus összerendelés tesztelése
-            - TanevService
-            - IskolaService
-            - SzakvelemenyKiallitoService
+        - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
+            - Fejlesztőpedagógus
+            - Tanév
+            - Iskola
+            - Szakvélemény Kiállitó
         - Frontend
             - Profil menü
+        - Elvárt eredmény
+            - A demóban látható Profil menü elkészül
+                - A fejlesztőpedagógus neve, illetve a tanévek, iskolák és szakvélemény kiállítók listái szerkeszthetőek.
 - **10.19.**
     - [Fejlesztési repertoár](./FUNKCIOK.md#fejlesztési-repertoár) menü implementálása
-        - Service osztályok
-            - FejlesztesiTeruletService
-            - FejlesztesiCelService
-            - FejlesztesiEszkozService
+        - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
+            - Fejlesztési Terület
+            - Fejlesztési Cél
+            - Fejlesztési Eszköz
         - Frontend
             - Fejlesztési repertoár menü
+        - Elvárt eredmény
+            - A demóban látható Fejlesztési Területek menü elkészül
+                - A [fejlesztési fa](./DEFINICIOK.md#fejlesztési-fa) egy újrafelhasználható komponensben látható és szerkeszthető lesz a felületen.
 - **10.26.**
     - [Gyermekek](./FUNKCIOK.md#gyermekek) menü implementálása
         - A cél az, hogy a gyermekek adatai megfelelően kerüljenek be az adatbázisba minél kevesebb UI lépésben. A fejlesztési tervek generálásával még nem foglalkozunk.
-        - Service osztályok
-            - GyermekService
-            - SzakvelemenyService
-            - TanevGyermekService
-            - FejlesztesiTervService
-            - A teanant szeparáció tesztelése
+        - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
+            - Gyermekek
+            - Szakvélemények
+            - Fejlesztési Tervek
+                - Építeni fog az előző hét fejlesztési fájára
         - Frontend
             - Gyermekek menü (a gyermekek felvétele a tanévhez tartalmazza a [fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) elkészítését segítő elemet is)
+        - Elvárt eredmény
+            - A demóban látható Gyermekek menü elkészül (PDF generálás nélkül)
 - **11.02.**
     - [Fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) generálása
-        - A cél, hogy megkapjuk az első kész fejlesztési tervet a tesztadatokból
         - PDF generátor endpoint létrehozása
             - FejlesztesiTervPdfService
         - Frontend
             - Gyermekek kiválasztása
             - Fejlesztési terv generálása gomb
             - PDF generátor modal
+        - Elvárt eredmény
+            - Fejlesztési terveket tudjunk generálni.
 - Ezen a ponton mérlegelném a [szakértői vélemények beolvasása funkció](./FUNKCIOK.md#szakértői-vélemények-beolvasása) implementálását.
 - **11.09.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 1
-        - A cél az, hogy fel lehessen venni egy foglalkozást és az megfelelően kerüljön be az adatbázisba. A megvalósulási számokkal és a mélyebb üzleti logikával még nem foglalkozunk.
-        - Service osztályok
-            - FoglalkozasService
+        - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
+            - Foglalkozások
         - Frontend
             - Foglalkozások menü, komplex modalok nélkül.
-        - Manuális tesztelés
+        - Elvárt eredmény
+            - Lehessen felvenni, szerkeszteni és törölni egy-egy foglalkozást. A megvalósulási számokkal még nem foglalkozunk.
 - **11.16.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 2
-        - A cél az, hogy a már felvehető foglalkozásokat bővítsük a megvalósulási számokkal, legyen másolható KRÉTA órai munka, 
-        - Service osztályok
-            - FoglalkozasService bővítése
-            - MegvalosulasService
+        - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
+            - A fejlesztési tervek megvalósulásának számítása
         - Frontend
             - Teljes, megvalósulási számokkal segítséget nyújtó modal a foglalkozások menüben
-        - Manuális tesztelés
+        - Elvárt eredmény
+            - A már felvehető foglalkozásokat bővítsük a megvalósulási számokkal, legyen másolható KRÉTA órai munka.
 - **11.23.**
     - [Szöveges értékelés](./DEFINICIOK.md#szöveges-értékelés) generátor implementálása
-        - Service osztályok
-            - SzovegesErtekelesService
+        - PDF generátor endpoint létrehozása
             - SzovegesErtekelesPdfService
-        - A cél az, hogy le tudjuk generálni az első szöveges értékeléseket a teszt adatokból
-            - PDF generátor endpoint létrehozása
+        - Elvárt eredmény
+            - Szöveges értékeléseket tudjunk generálni.
 - **11.30.**
     - [Fizetési Flow](./FUNKCIOK.md#fizetési-flow) implementálása
         - Stripe bekötése
@@ -84,12 +87,15 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - FizetesService
         - Frontend
             - Fizetési flow a PDF generátorok menüiben.
-        - Manuális tesztelés
+        - Elvárt eredmény
+            - Az alkalmazás fizetéssel együtt működik.
 - **12.07.**
     - Manuális end-to-end tesztek írása
         - Deployment előtti checklist írása.
             - Persze nem fogjuk élesíteni az appot, de egy valós projektnél fontos lenne.
     - Automata end-to-end tesztek írása a legkritikusabb funkciókra (bejelentkezés, pdf generálás)
+    - Elvárt eredmény
+        - Minden funkció kész és a leírtaknak megfelelően működik
 - **12.14.**
     - Önlab dokumentáció elkészítése
     - Prezentáció elkészítése
