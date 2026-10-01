@@ -100,7 +100,7 @@ A fejlesztőfoglalkozások strukturált naplózására használt eszköz. A KRÉ
 
 ### [Szakértői vélemények](./DEFINICIOK.md#szakvélemény) beolvasása
 
-A szakértői vélemények papír alapn érkeznek az iskolákba.
+A szakértői vélemények papír alapon érkeznek az iskolákba.
 
 Nincsen pdf, digitális adat vagy bármilyen egyéb integrációs felület.
 
