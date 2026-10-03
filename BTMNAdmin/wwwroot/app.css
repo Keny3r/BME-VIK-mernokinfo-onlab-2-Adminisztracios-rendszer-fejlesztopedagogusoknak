@@ -1,60 +1,340 @@
+/* ==========================================================================
+   BTMN Admin - Alkalmazás Globális Stíluslap
+   Színvilág: Letisztult, minimalista földszínek / meleg barna flat design
+   A demo (docs/style.css) stilisztikai értékei alapján
+   ========================================================================== */
+
+:root {
+    /* Alapszínek (meleg barna flat paletta a demóból) */
+    --color-base-100: #ffffff;
+    --color-base-200: #f7f3ee;
+    --color-base-300: #e9e2d5;
+    --color-base-content: #2e241c;
+    --color-base-content-muted: #6e6256;
+    --color-base-content-faint: #9c9083;
+
+    --color-primary: #7a4623;
+    --color-primary-hover: #5d3419;
+    --color-primary-content: #ffffff;
+    --color-primary-soft: #f4ece4;
+
+    --color-neutral: #523b2e;
+    --color-neutral-content: #fcfbfa;
+
+    --color-success: #2e7246;
+    --color-success-bg: #eaf5ee;
+    --color-error: #b33927;
+    --color-error-bg: #fbece9;
+
+    --radius-box: 8px;
+    --radius-field: 6px;
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    /* Bootstrap CSS változók felülbírálása */
+    --bs-primary: #7a4623;
+    --bs-primary-rgb: 122, 70, 35;
+    --bs-body-font-family: var(--font-family);
+    --bs-body-bg: #f7f3ee;
+    --bs-body-color: #2e241c;
+    --bs-secondary-color: #6e6256;
+    --bs-border-color: #e9e2d5;
+    --bs-border-radius: 6px;
+    --bs-border-radius-lg: 8px;
+    --bs-border-radius-sm: 4px;
+    --bs-link-color: #7a4623;
+    --bs-link-hover-color: #5d3419;
+    --bs-danger: #b33927;
+    --bs-danger-rgb: 179, 57, 39;
+    --bs-success: #2e7246;
+    --bs-success-rgb: 46, 114, 70;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--font-family);
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+    line-height: 1.5;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ================= Tipográfia ================= */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: var(--color-base-content);
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 1.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.text-muted,
+.text-secondary {
+    color: var(--color-base-content-muted) !important;
+}
+
+hr {
+    border-color: var(--color-base-300);
+    opacity: 1;
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+/* ================= Gombok ================= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: var(--radius-field);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: inherit;
+    line-height: 1.4;
+    transition: all 0.15s ease;
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    color: var(--color-primary-content);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    color: var(--color-primary-content);
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
 }
 
-.content {
-    padding-top: 1.1rem;
+.btn-outline-danger {
+    color: var(--color-error);
+    border-color: var(--color-error);
+    background-color: transparent;
 }
 
-h1:focus {
+.btn-outline-danger:hover,
+.btn-outline-danger:focus,
+.btn-outline-danger:active {
+    color: #ffffff;
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem #ffffff, 0 0 0 0.25rem rgba(122, 70, 35, 0.25);
+}
+
+/* ================= Kártyák (Cards) ================= */
+.card {
+    background-color: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
+    border-radius: var(--radius-box);
+    box-shadow: 0 1px 3px rgba(46, 36, 28, 0.05);
+}
+
+.card-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body h2.h5 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-base-content);
+    margin-bottom: 0.35rem;
+}
+
+/* ================= Űrlapok és Beviteli Mezők ================= */
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--color-base-content);
+    background-color: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
+    border-radius: var(--radius-field);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    color: var(--color-base-content);
+    background-color: var(--color-base-100);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(122, 70, 35, 0.2);
     outline: none;
 }
 
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-base-content);
+    margin-bottom: 0.35rem;
+}
+
+.form-floating > .form-control {
+    font-size: 0.9rem;
+}
+
+.form-floating > label {
+    color: var(--color-base-content-muted);
+    font-size: 0.85rem;
+}
+
+.form-check-input {
+    accent-color: var(--color-primary);
+    border-color: var(--color-base-300);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.darker-border-checkbox.form-check-input {
+    border-color: var(--color-base-content-faint);
+}
+
+/* ================= Jelvények (Badges) ================= */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-field);
+    line-height: 1.4;
+}
+
+.badge-success {
+    background-color: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+/* ================= Publikus Felület (PublicLayout & Landing) ================= */
+.public-page {
+    min-height: 100vh;
+    background-color: var(--color-base-200);
+    display: flex;
+    flex-direction: column;
+}
+
+.public-header {
+    height: 60px;
+    background-color: var(--color-base-100);
+    border-bottom: 1px solid var(--color-base-300);
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.public-header a {
+    color: var(--color-base-content);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.public-header a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.public-page main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+}
+
+.landing {
+    max-width: 38rem;
+    margin: 0 auto;
+    text-align: center;
+    background-color: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
+    border-radius: var(--radius-box);
+    padding: 2.75rem 2.25rem;
+    box-shadow: 0 1px 3px rgba(46, 36, 28, 0.05);
+}
+
+.landing h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-base-content);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.landing p {
+    color: var(--color-base-content-muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.landing .btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+    margin: 0.35rem;
+}
+
+/* ================= Validáció és Hibaüzenetek ================= */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid var(--color-success);
 }
 
 .invalid {
-    outline: 1px solid #e50000;
+    outline: 1px solid var(--color-error);
 }
 
-.validation-message {
-    color: #e50000;
+.validation-message,
+.text-danger {
+    color: var(--color-error) !important;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
 }
 
 .blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, var(--color-error);
     padding: 1rem 1rem 1rem 3.7rem;
     color: white;
+    border-radius: var(--radius-box);
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-.darker-border-checkbox.form-check-input {
-    border-color: #929292;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
+.blazor-error-boundary::after {
+    content: "Hiba történt az oldal megjelenítése közben.";
 }

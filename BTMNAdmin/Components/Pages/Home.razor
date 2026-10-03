@@ -1,7 +1,21 @@
-﻿@page "/"
+@page "/"
+@layout PublicLayout
 
-<PageTitle>Home</PageTitle>
+<PageTitle>BTMN Admin</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="landing">
+    <h1>Kevesebb adminisztráció, több idő a fejlesztésre</h1>
+    <p>
+        Gyermekek, fejlesztési tervek és foglalkozások egy helyen,
+        fejlesztőpedagógusok számára.
+    </p>
 
-Welcome to your new app.
+    <a class="btn btn-primary"
+       href="/Account/Login?ReturnUrl=%2Fprofil">
+        Bejelentkezés
+    </a>
+    <a class="btn btn-primary"
+       href="/Account/Register?ReturnUrl=%2Fprofil">
+        Regisztráció
+    </a>
+</section>

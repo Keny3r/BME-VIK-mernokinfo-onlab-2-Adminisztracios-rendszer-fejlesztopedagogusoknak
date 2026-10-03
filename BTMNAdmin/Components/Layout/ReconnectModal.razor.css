@@ -19,29 +19,26 @@
     display: block;
 }
 
-
 #components-reconnect-modal {
-    background-color: white;
+    background-color: #ffffff;
     width: 20rem;
     margin: 20vh auto;
     padding: 2rem;
-    border: 0;
-    border-radius: 0.5rem;
-    box-shadow: 0 3px 6px 2px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e9e2d5;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(46, 36, 28, 0.2);
     opacity: 0;
     transition: display 0.5s allow-discrete, overlay 0.5s allow-discrete;
     animation: components-reconnect-modal-fadeOutOpacity 0.5s both;
-    &[open]
+}
 
-{
+#components-reconnect-modal[open] {
     animation: components-reconnect-modal-slideUp 1.5s cubic-bezier(.05, .89, .25, 1.02) 0.3s, components-reconnect-modal-fadeInOpacity 0.5s ease-in-out 0.3s;
     animation-fill-mode: both;
 }
 
-}
-
 #components-reconnect-modal::backdrop {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(46, 36, 28, 0.5);
     animation: components-reconnect-modal-fadeInOpacity 0.5s ease-in-out;
     opacity: 1;
 }
@@ -50,7 +47,6 @@
     0% {
         transform: translateY(30px) scale(0.95);
     }
-
     100% {
         transform: translateY(0);
     }
@@ -60,7 +56,6 @@
     0% {
         opacity: 0;
     }
-
     100% {
         opacity: 1;
     }
@@ -70,7 +65,6 @@
     0% {
         opacity: 1;
     }
-
     100% {
         opacity: 0;
     }
@@ -86,23 +80,29 @@
 #components-reconnect-modal p {
     margin: 0;
     text-align: center;
+    color: #2e241c;
+    font-size: 0.95rem;
 }
 
 #components-reconnect-modal button {
     border: 0;
-    background-color: #6b9ed2;
-    color: white;
-    padding: 4px 24px;
-    border-radius: 4px;
+    background-color: #7a4623;
+    color: #ffffff;
+    padding: 0.45rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 }
 
-    #components-reconnect-modal button:hover {
-        background-color: #3b6ea2;
-    }
+#components-reconnect-modal button:hover {
+    background-color: #5d3419;
+}
 
-    #components-reconnect-modal button:active {
-        background-color: #6b9ed2;
-    }
+#components-reconnect-modal button:active {
+    background-color: #7a4623;
+}
 
 .components-rejoining-animation {
     position: relative;
@@ -110,17 +110,17 @@
     height: 80px;
 }
 
-    .components-rejoining-animation div {
-        position: absolute;
-        border: 3px solid #0087ff;
-        opacity: 1;
-        border-radius: 50%;
-        animation: components-rejoining-animation 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-    }
+.components-rejoining-animation div {
+    position: absolute;
+    border: 3px solid #7a4623;
+    opacity: 1;
+    border-radius: 50%;
+    animation: components-rejoining-animation 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
 
-        .components-rejoining-animation div:nth-child(2) {
-            animation-delay: -0.5s;
-        }
+.components-rejoining-animation div:nth-child(2) {
+    animation-delay: -0.5s;
+}
 
 @keyframes components-rejoining-animation {
     0% {
@@ -130,7 +130,6 @@
         height: 0;
         opacity: 0;
     }
-
     4.9% {
         top: 40px;
         left: 40px;
@@ -138,7 +137,6 @@
         height: 0;
         opacity: 0;
     }
-
     5% {
         top: 40px;
         left: 40px;
@@ -146,7 +144,6 @@
         height: 0;
         opacity: 1;
     }
-
     100% {
         top: 0px;
         left: 0px;
