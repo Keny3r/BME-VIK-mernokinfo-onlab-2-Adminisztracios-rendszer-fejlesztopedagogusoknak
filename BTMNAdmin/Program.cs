@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BTMNAdmin.Components;
 using BTMNAdmin.Components.Account;
 using BTMNAdmin.Data;
+using BTMNAdmin.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,9 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<FejlesztopedagogusService>();
+builder.Services.AddScoped<RegistrationService>();
 
 var app = builder.Build();
 

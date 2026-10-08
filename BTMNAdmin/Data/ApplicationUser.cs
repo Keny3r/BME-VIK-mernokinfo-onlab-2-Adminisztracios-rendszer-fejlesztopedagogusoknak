@@ -6,4 +6,3 @@ namespace BTMNAdmin.Data;
 public class ApplicationUser : IdentityUser
 {
 }
-

@@ -1,6 +1,17 @@
 @page "/profil"
+@using BTMNAdmin.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
+
+@using System.Security.Claims
+
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using BTMNAdmin.Components.Shared
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FejlesztopedagogusService FejlesztopedagogusService
+
 
 <PageTitle>Profil – BTMN Admin</PageTitle>
 
@@ -9,9 +20,68 @@
 <div class="card mb-3">
     <div class="card-body">
         <h2 class="h5">Fejlesztőpedagógus neve</h2>
-        <p class="text-muted mb-0">Placeholder Név</p>
+        @if (nev is null)
+        {
+            <p class="text-danger mb-0">Nem található pedagógusprofil ehhez a felhasználóhoz.</p>
+        }
+        else
+        {
+            <div class="d-flex align-items-center justify-content-between gap-3">
+                <p class="text-muted mb-0">@nev</p>
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        title="Név szerkesztése"
+                        aria-label="Név szerkesztése"
+                        @onclick="OpenNameEditor">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="16" height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true">
+                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L5.207 14.5H2v-3.207L12.146.146zM3 11.707V13.5h1.793L14.793 3.5 12.5 1.207 3 11.707z" />
+                    </svg>
+                </button>
+            </div>
+        }
     </div>
 </div>
+
+<AppModal IsOpen="isNameEditorOpen"
+          Title="Fejlesztőpedagógus nevének szerkesztése"
+          OnClose="CloseNameEditor">
+
+    <EditForm Model="nameInput" OnValidSubmit="SaveName">
+        <DataAnnotationsValidator />
+
+        <label for="pedagogus-nev" class="form-label">Név</label>
+        <InputText id="pedagogus-nev"
+                   class="form-control"
+                   @bind-Value="nameInput.Nev" />
+        <ValidationMessage For="() => nameInput.Nev"
+                           class="text-danger" />
+
+        @if (editError is not null)
+        {
+            <p class="text-danger mt-2" role="alert">@editError</p>
+        }
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button"
+                    class="btn btn-secondary"
+                    disabled="@isSaving"
+                    @onclick="CloseNameEditor">
+                Mégse
+            </button>
+
+            <button type="submit"
+                    class="btn btn-primary"
+                    disabled="@isSaving">
+                Mentés
+            </button>
+        </div>
+    </EditForm>
+</AppModal>
 
 <div class="card mb-3">
     <div class="card-body">
@@ -33,3 +103,89 @@
         <p class="text-muted mb-0">Zala Megyei Pedagógiai Szakszolgálat</p>
     </div>
 </div>
+
+@code {
+    private string? nev;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+            return;
+
+        nev = await FejlesztopedagogusService.GetNevAsync(userId);
+    }
+
+    private bool isNameEditorOpen;
+    private bool isSaving;
+    private string? editError;
+    private NameInput nameInput = new();
+
+    private void OpenNameEditor()
+    {
+        nameInput = new NameInput { Nev = nev ?? "" };
+        editError = null;
+        isNameEditorOpen = true;
+    }
+
+    private void CloseNameEditor()
+    {
+        if (isSaving)
+            return;
+
+        isNameEditorOpen = false;
+        editError = null;
+    }
+
+    private async Task SaveName()
+    {
+        if (isSaving)
+            return;
+
+        if (string.IsNullOrWhiteSpace(nameInput.Nev))
+        {
+            editError = "A név nem lehet üres.";
+            return;
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            editError = "Nem sikerült azonosítani a felhasználót.";
+            return;
+        }
+
+        isSaving = true;
+        editError = null;
+
+        try
+        {
+            var updated = await FejlesztopedagogusService.UpdateNevAsync(
+                userId, nameInput.Nev);
+
+            if (!updated)
+            {
+                editError = "Nem található pedagógusprofil ehhez a felhasználóhoz.";
+                return;
+            }
+
+            nev = await FejlesztopedagogusService.GetNevAsync(userId);
+            isNameEditorOpen = false;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class NameInput
+    {
+        [Required(ErrorMessage = "A név megadása kötelező.")]
+        [StringLength(150, ErrorMessage = "A név legfeljebb 150 karakter lehet.")]
+        public string Nev { get; set; } = "";
+    }
+}

@@ -1,0 +1,65 @@
+@if (IsOpen)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="@titleId"
+         @ref="dialog"
+         @onkeydown="HandleKeyDown">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="@titleId">@Title</h2>
+                    <button type="button"
+                            class="btn-close"
+                            aria-label="Bezárás"
+                            @onclick="OnClose">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    @ChildContent
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private readonly string titleId = $"modal-title-{Guid.NewGuid():N}";
+    private ElementReference dialog;
+    private bool wasOpen;
+    private bool focusPending;
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen && !wasOpen)
+            focusPending = true;
+
+        wasOpen = IsOpen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen && focusPending)
+        {
+            focusPending = false;
+            await dialog.FocusAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            await OnClose.InvokeAsync();
+    }
+}
