@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTMN Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Betűtípusok és adatok -->
+  <script src="fonts/fonts-base64.js"></script>
+  <script src="js/data/teruletek-data.js"></script>
+
+  <!-- Kliensoldali könyvtárak (helyi vendor fájlok) -->
+  <script src="vendor/fuzzball.umd.min.js"></script>
+  <script src="vendor/pdf.min.js"></script>
+  <script src="vendor/tesseract.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Alkalmazás moduláris szolgáltatások -->
+  <script src="js/services/storage-service.js"></script>
+  <script src="js/services/matching-service.js"></script>
+  <script src="js/services/ocr-service.js"></script>
+  <script src="js/services/pdf-service.js"></script>
+
+  <!-- Alkalmazás koordinátor és Alpine.js -->
+  <script src="js/app.js"></script>
+  <script defer src="vendor/alpine.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container" x-data="btmnApp">
+
+    <header class="app-header">
+      <h1>BTMN Admin</h1>
+    </header>
+
+    <!-- Lépésjelző sáv -->
+    <div class="step-nav">
+      <div class="step-indicator" :class="{ 'active': currentStep === 1, 'completed': currentStep > 1 }"></div>
+      <div class="step-indicator" :class="{ 'active': currentStep === 2 || currentStep === 3, 'completed': currentStep > 3 }"></div>
+      <div class="step-indicator" :class="{ 'active': currentStep >= 4 && currentStep <= 6, 'completed': currentStep === 7 }"></div>
+      <div class="step-indicator" :class="{ 'active': currentStep === 7 }"></div>
+    </div>
+
+    <!-- 1. LÉPÉS: ALAP ADATOK -->
+    <div class="card" x-show="currentStep === 1" x-cloak>
+      <h2 class="card-title">Alap adatok</h2>
+
+      <form @submit.prevent="submitAlapAdatok">
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label class="form-label" for="pedagogusNeve">A pedagógus neve</label>
+            <input 
+              id="pedagogusNeve" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. Minta Mária"
+              x-model="alapAdatok.pedagogusNeve"
+            >
+          </div>
+
+          <div class="form-group col-span-2">
+            <label class="form-label" for="iskola">Iskolája</label>
+            <input 
+              id="iskola" 
+              type="text" 
+              list="iskolakList"
+              class="form-input" 
+              placeholder="pl. Kossuth Lajos Általános Iskola"
+              x-model="alapAdatok.iskola"
+            >
+            <datalist id="iskolakList">
+              <template x-for="nev in profilSuggestions.iskola" :key="nev">
+                <option :value="nev"></option>
+              </template>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="szakszolgalat">A szakszolgálat neve</label>
+            <input
+              id="szakszolgalat"
+              type="text"
+              list="szakszolgalatokList"
+              class="form-input"
+              placeholder="pl. Fővárosi Pedagógiai Szakszolgálat"
+              x-model="alapAdatok.szakszolgalat"
+            >
+            <datalist id="szakszolgalatokList">
+              <template x-for="nev in profilSuggestions.szakszolgalat" :key="nev">
+                <option :value="nev"></option>
+              </template>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tanev">Tanév</label>
+            <input
+              id="tanev"
+              type="text"
+              list="tanevekList"
+              class="form-input"
+              placeholder="pl. 2024/2025"
+              x-model="alapAdatok.tanev"
+            >
+            <datalist id="tanevekList">
+              <template x-for="nev in profilSuggestions.tanev" :key="nev">
+                <option :value="nev"></option>
+              </template>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="btn-row right">
+          <button type="submit" class="btn btn-primary">
+            Tovább
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 2.1 LÉPÉS: GYERMEK DOKUMENTUM -->
+    <div class="card" x-show="currentStep === 2" x-cloak>
+      <h2 class="card-title">Gyermek dokumentum</h2>
+
+      <div x-show="!ocrLoading">
+        <button 
+          type="button" 
+          class="camera-launch-btn" 
+          @click="startCameraScanner()"
+        >
+          <svg class="camera-launch-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Kamera indítása</span>
+        </button>
+
+        <div class="camera-fallback-zone">
+          <label class="camera-fallback-label">
+            <input 
+              type="file" 
+              accept="image/*,.pdf" 
+              @change="handleChildFileUpload($event)"
+              style="display: none;"
+            >
+            vagy fájl feltöltése
+          </label>
+        </div>
+      </div>
+
+      <div class="progress-card" x-show="ocrLoading">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" :style="`width: ${ocrProgress}%`"></div>
+        </div>
+        <div class="progress-status" x-text="`${ocrStatus} (${ocrProgress}%)`"></div>
+      </div>
+
+      <div x-show="cameraError" class="progress-card" style="background-color: var(--danger-bg); color: var(--danger); margin-top: 15px;">
+        <span x-text="cameraError"></span>
+      </div>
+
+      <div x-show="ocrError" class="progress-card" style="background-color: var(--danger-bg); color: var(--danger); margin-top: 15px;">
+        <span x-text="ocrError"></span>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" @click="goToStep(1)">
+          Vissza
+        </button>
+        <button type="button" class="btn btn-outline" @click="skipChildUpload()" :disabled="ocrLoading">
+          Tovább feltöltés nélkül
+        </button>
+      </div>
+    </div>
+
+    <!-- 2.2 LÉPÉS: GYERMEK ADATAI ŰRLAP -->
+    <div class="card" x-show="currentStep === 3" x-cloak>
+      <h2 class="card-title">Gyermek adatai</h2>
+
+      <form @submit.prevent="submitGyermekAdatok">
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label class="form-label" for="nev">Név <span class="required">*</span></label>
+            <input 
+              id="nev" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. Kiss Péter"
+              required
+              x-model="gyermek.nev"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="anyjaNeve">Anyja neve</label>
+            <input 
+              id="anyjaNeve" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. Kovács Éva"
+              x-model="gyermek.anyjaNeve"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="szuletesiHelyEsIdo">Születési helye és ideje</label>
+            <input 
+              id="szuletesiHelyEsIdo" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. Budapest, 2014. 05. 12."
+              x-model="gyermek.szuletesiHelyEsIdo"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="forgalmiSzam">Forgalmi szám</label>
+            <input 
+              id="forgalmiSzam" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. 1234/2024"
+              x-model="gyermek.forgalmiSzam"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="iktatoszam">Iktatószám</label>
+            <input 
+              id="iktatoszam" 
+              type="text" 
+              class="form-input" 
+              placeholder="pl. BP-01/123/2024"
+              x-model="gyermek.iktatoszam"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="osztaly">Osztály</label>
+            <input 
+              id="osztaly" 
+              type="text" 
+              list="osztalyokList"
+              class="form-input" 
+              placeholder="pl. 3.a"
+              x-model="gyermek.osztaly"
+            >
+            <datalist id="osztalyokList">
+              <template x-for="item in history.osztalyok" :key="item">
+                <option :value="item"></option>
+              </template>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="fejlesztesFormaja">Fejlesztés formája</label>
+            <input 
+              id="fejlesztesFormaja" 
+              type="text" 
+              list="formakList"
+              class="form-input" 
+              placeholder="pl. egyéni / csoportos"
+              x-model="gyermek.fejlesztesFormaja"
+            >
+            <datalist id="formakList">
+              <template x-for="item in history.formak" :key="item">
+                <option :value="item"></option>
+              </template>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hetiOraszam">Heti óraszám</label>
+            <input 
+              id="hetiOraszam" 
+              type="text" 
+              list="oraszamokList"
+              class="form-input" 
+              placeholder="pl. heti 2 óra"
+              x-model="gyermek.hetiOraszam"
+            >
+            <datalist id="oraszamokList">
+              <template x-for="item in history.oraszamok" :key="item">
+                <option :value="item"></option>
+              </template>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="felulvizsgalatIdeje">Felülvizsgálat ideje</label>
+            <input 
+              id="felulvizsgalatIdeje" 
+              type="text" 
+              list="felulvizsgalatokList"
+              class="form-input" 
+              placeholder="pl. 2025/2026"
+              x-model="gyermek.felulvizsgalatIdeje"
+            >
+            <datalist id="felulvizsgalatokList">
+              <template x-for="item in history.felulvizsgalatok" :key="item">
+                <option :value="item"></option>
+              </template>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" @click="goToStep(2)">
+            Vissza
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Tovább
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 2.3.1 LÉPÉS: FEJLESZTÉSI TERÜLETEK BEOLVASÁSA -->
+    <div class="card" x-show="currentStep === 4" x-cloak>
+      <h2 class="card-title">Fejlesztési területek beolvasása</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; text-align: center;">
+        Olvasd be a szakértői vélemény fejlesztési területeit a kamerával, vagy tölts fel egy fájlt.
+      </p>
+
+      <div x-show="!ocrLoading">
+        <button 
+          type="button" 
+          class="camera-launch-btn" 
+          @click="startAreaCamera()"
+        >
+          <svg class="camera-launch-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Kamera indítása</span>
+        </button>
+
+        <div class="camera-fallback-zone">
+          <label class="camera-fallback-label">
+            <input 
+              type="file" 
+              accept="image/*,.pdf" 
+              @change="handleAreasImageUpload($event)"
+              style="display: none;"
+            >
+            vagy fájl feltöltése
+          </label>
+        </div>
+      </div>
+
+      <div class="progress-card" x-show="ocrLoading">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" :style="`width: ${ocrProgress}%`"></div>
+        </div>
+        <div class="progress-status" x-text="`${ocrStatus} (${ocrProgress}%)`"></div>
+      </div>
+
+      <div x-show="areaCameraError" class="progress-card" style="background-color: var(--danger-bg); color: var(--danger); margin-top: 15px;">
+        <span x-text="areaCameraError"></span>
+      </div>
+
+      <div x-show="ocrError" class="progress-card" style="background-color: var(--danger-bg); color: var(--danger); margin-top: 15px;">
+        <span x-text="ocrError"></span>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" @click="goToStep(3)">
+          Vissza
+        </button>
+        <button type="button" class="btn btn-outline" @click="skipAreasImageUpload()" :disabled="ocrLoading">
+          Kihagyás
+        </button>
+      </div>
+    </div>
+
+    <!-- 2.3.2 LÉPÉS: TERÜLETEK EGYESÉVEL ÁTNÉZÉSE -->
+    <div class="card" x-show="currentStep === 5" x-cloak>
+      <div class="review-box" x-show="getCurrentMatchedLine()">
+        <div class="review-counter" x-text="`${currentLineIndex + 1} / ${matchedLines.length}`"></div>
+
+        <div class="review-extracted-card" x-text="getCurrentMatchedLine() ? getCurrentMatchedLine().rawLine : ''"></div>
+
+        <div class="suggestions-grid">
+          <template x-for="sug in getTopSuggestions()" :key="sug.terulet.nev">
+            <button 
+              type="button" 
+              class="suggestion-btn" 
+              :class="{ 'selected': isAreaSelectedInCurrentLine(sug.terulet.nev) }"
+              @click="toggleAreaSelection(sug.terulet)"
+            >
+              <div class="suggestion-btn-content">
+                <span class="check-box-indicator" :class="{ 'checked': isAreaSelectedInCurrentLine(sug.terulet.nev) }">
+                  <svg x-show="isAreaSelectedInCurrentLine(sug.terulet.nev)" class="check-svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+                <span x-text="sug.terulet.nev"></span>
+              </div>
+              <span class="suggestion-score" x-show="sug.score !== null && sug.score !== undefined" x-text="`${sug.score}%`"></span>
+            </button>
+          </template>
+        </div>
+
+        <div class="form-group" style="margin-top: 8px;">
+          <select 
+            class="form-select" 
+            @change="if ($event.target.value) { addCustomAreaToCurrentLine($event.target.value); $event.target.value = ''; }"
+          >
+            <option value="">Egyéb terület kiválasztása...</option>
+            <template x-for="item in allTeruletek" :key="item.nev">
+              <option :value="item.nev" x-text="item.nev"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" @click="goToPreviousLineOrStep()">
+            Vissza
+          </button>
+          <button type="button" class="btn btn-primary" @click="advanceLineReview()">
+            <span x-text="currentLineIndex === matchedLines.length - 1 ? 'Tovább a listához' : 'Következő'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3.3 LÉPÉS: KÉTLISTÁS NÉZET -->
+    <div class="card" x-show="currentStep === 6" x-cloak>
+      <h2 class="card-title">Fejlesztési területek</h2>
+
+      <div class="two-lists-container">
+        <!-- 1. Felső lista: Kiválasztott területek -->
+        <div class="list-section">
+          <div class="list-section-header">
+            <span class="list-title">Kiválasztott területek</span>
+            <span class="list-badge" x-text="`${selectedTeruletek.length} db`"></span>
+          </div>
+
+          <div class="items-stack">
+            <template x-if="selectedTeruletek.length === 0">
+              <div class="item-chip" style="justify-content: center; color: var(--text-light); font-style: italic;">
+                Nincs kiválasztott terület
+              </div>
+            </template>
+
+            <template x-for="(area, index) in selectedTeruletek" :key="area.nev">
+              <div class="item-chip selected">
+                <span x-text="area.nev"></span>
+                <div class="item-chip-actions">
+                  <button 
+                    type="button" 
+                    class="chip-btn remove" 
+                    title="Eltávolítás"
+                    @click="moveToUnselected(index)"
+                  >×</button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- 2. Alsó lista: Nem kiválasztott területek -->
+        <div class="list-section">
+          <div class="list-section-header">
+            <span class="list-title">Nem kiválasztott területek</span>
+            <span class="list-badge" x-text="`${unselectedTeruletek.length} db`"></span>
+          </div>
+
+          <div class="unselected-grid">
+            <template x-for="area in unselectedTeruletek" :key="area.nev">
+              <div class="unselected-card" @click="moveToSelected(area)">
+                <span x-text="area.nev"></span>
+                <span class="add-icon">+</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" @click="goBackFromTwoLists()">
+          Vissza
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          :disabled="selectedTeruletek.length === 0 || isPdfGenerating"
+          @click="generatePdf()"
+        >
+          <span x-show="!isPdfGenerating">PDF generálása</span>
+          <span x-show="isPdfGenerating">Generálás...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2.3.4 & 2.3.5 LÉPÉS: SIKERES PDF GENERÁLÁS ÉS BEFEJEZÉS -->
+    <div class="card" x-show="currentStep === 7" x-cloak>
+      <div class="success-box">
+        <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+
+        <h2 class="card-title" style="margin-bottom: 0;">Fejlesztési terv elkészült</h2>
+
+        <div class="success-filename" x-text="generatedFileName"></div>
+
+        <div class="btn-row center" style="margin-top: 16px;">
+          <button type="button" class="btn btn-outline" @click="downloadPdfAgain()">
+            PDF letöltése újra
+          </button>
+          <button type="button" class="btn btn-primary" @click="resetForNewChild()">
+            Új gyermek
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERAKTÍV KAMERA NÉZET MODAL -->
+    <div class="camera-overlay" x-show="isCameraActive" x-cloak>
+      <div class="camera-container">
+        
+        <!-- Felső fejléc sáv: Mező neve és számláló + Mégse (X) gomb -->
+        <div class="camera-header">
+          <div class="camera-title-wrap">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="camera-step-counter" x-text="`${currentCameraFieldIndex + 1} / ${cameraFields.length}`"></span>
+              <span class="camera-tip-text">Érintsd meg a fókuszhoz</span>
+            </div>
+            <h3 class="camera-field-label" x-text="currentCameraField?.label || ''"></h3>
+          </div>
+          <button type="button" class="camera-btn-close" @click="cancelCameraScanner()" aria-label="Mégse">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Kamera előnézet és beolvasó sáv (viewfinder) -->
+        <div class="camera-viewfinder-wrapper" @click="triggerChildCameraFocus($event)">
+          <video 
+            x-ref="cameraVideo" 
+            class="camera-video" 
+            autoplay 
+            playsinline 
+            muted
+          ></video>
+
+          <!-- Sötétített maszk kivágással a középső sávban -->
+          <div class="camera-mask">
+            <!-- Széles, de alacsonyabb beolvasó sáv a képernyő közepén -->
+            <div 
+              x-ref="cameraViewfinder" 
+              class="camera-viewfinder-slot" 
+              :class="{ 'matched': cameraMatched }"
+            >
+              <div class="viewfinder-corner top-left"></div>
+              <div class="viewfinder-corner top-right"></div>
+              <div class="viewfinder-corner bottom-left"></div>
+              <div class="viewfinder-corner bottom-right"></div>
+
+              <!-- Pipa siker jelzés -->
+              <div class="camera-success-indicator" x-show="cameraMatched" x-transition>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fókusz gyűrű animáció kattintáskor -->
+          <div 
+            class="camera-focus-ring" 
+            x-show="showFocusRing" 
+            :style="`left: ${focusRingX}px; top: ${focusRingY}px;`"
+            x-cloak
+          ></div>
+        </div>
+
+        <!-- Alsó vezérlő sáv: Következő gomb -->
+        <div class="camera-footer">
+          <button 
+            type="button" 
+            class="camera-btn-next" 
+            @click="skipCameraField()"
+            :disabled="cameraMatched"
+          >
+            <span>Következő</span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TERÜLETEK INTERAKTÍV KAMERA NÉZET MODAL -->
+    <div class="camera-overlay area-camera-overlay" x-show="isAreaCameraActive" x-cloak>
+      <div class="camera-container">
+        
+        <!-- Felső fejléc sáv: Cím és számláló + Mégse (X) gomb -->
+        <div class="camera-header">
+          <div class="camera-title-wrap">
+            <template x-if="areaCameraPhase === 'live'">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="camera-tip-text">Irányítsd a kamerát a területek listájára</span>
+              </div>
+            </template>
+            <template x-if="areaCameraPhase === 'list'">
+              <span class="camera-step-counter" x-text="`${getSelectedScannedCount()} / ${areaScannedList.length} sor kijelölve`"></span>
+            </template>
+            <h3 class="camera-field-label">
+              <span x-show="areaCameraPhase === 'live'">Fejlesztési területek fotózása</span>
+              <span x-show="areaCameraPhase === 'list'">Beolvasott sorok jóváhagyása</span>
+            </h3>
+          </div>
+          <button type="button" class="camera-btn-close" @click="cancelAreaCamera()" aria-label="Bezárás">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Kamera előnézet és exponáló nézet (Élő fázis) -->
+        <div class="camera-viewfinder-wrapper" x-show="areaCameraPhase === 'live'" @click="triggerCameraFocus($event)">
+          <div class="camera-media-frame" :style="`aspect-ratio: ${areaVideoAspectRatio};`">
+            <video 
+              x-ref="areaCameraVideo" 
+              class="camera-video area-camera-media" 
+              autoplay 
+              playsinline 
+              muted
+            ></video>
+
+
+            <!-- Fókusz gyűrű animáció kattintáskor -->
+            <div 
+              class="camera-focus-ring" 
+              x-show="showFocusRing" 
+              :style="`left: ${focusRingX}px; top: ${focusRingY}px;`"
+              x-cloak
+            ></div>
+
+            <!-- Betöltés folyamatban exponáláskor -->
+            <div class="area-processing-overlay" x-show="isProcessingCapture" x-cloak x-transition>
+              <div class="spinner"></div>
+              <span>Szöveg felismerése és tisztítása...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Beolvasott szövegsorok listája (Lista fázis - fotó helyett a kinyert sorok) -->
+        <div class="area-scanned-list-wrapper" x-show="areaCameraPhase === 'list'">
+          <div class="area-scanned-list-card">
+            <div class="area-scanned-list-header">
+              <div>
+                <h4 class="area-scanned-title">Felismertebb szövegsorok</h4>
+                <p class="area-scanned-subtitle">
+                  Pipáld be a megtartani kívánt sorokat (a 65% felettiek automatikusan kijelölve).
+                </p>
+              </div>
+              <span class="list-badge" x-text="`${getSelectedScannedCount()} / ${areaScannedList.length} kijelölve`"></span>
+            </div>
+
+            <!-- Üres állapot, ha nem volt felismerhető sor -->
+            <div class="area-empty-notice-box" x-show="areaScannedList.length === 0">
+              <p>Nem található észlelt szövegsor a fotón.</p>
+              <p class="area-empty-sub">Kérjük, készíts új, élesebb fotót közelebbről, jó megvilágítás mellett!</p>
+            </div>
+
+            <!-- Sorok listája -->
+            <div class="area-scanned-items" x-show="areaScannedList.length > 0">
+              <template x-for="item in areaScannedList" :key="item.id">
+                <div 
+                  class="scanned-row-item" 
+                  :class="{ 'selected': item.selected, 'low-score': item.score < 65 }"
+                  @click="toggleScannedItem(item)"
+                >
+                  <div class="scanned-checkbox">
+                    <span class="check-box-indicator" :class="{ 'checked': item.selected }">
+                      <svg x-show="item.selected" class="check-svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div class="scanned-text-wrap">
+                    <span class="scanned-text" x-text="item.text"></span>
+                  </div>
+                  <div class="scanned-score-tag" x-show="item.score !== undefined && item.score !== null">
+                    <span :class="item.score >= 65 ? 'score-high' : 'score-low'" x-text="`${item.score}%`"></span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alsó vezérlő sáv -->
+        <div class="camera-footer">
+          <!-- Élő fázis: Exponáló gomb -->
+          <template x-if="areaCameraPhase === 'live'">
+            <button 
+              type="button" 
+              class="camera-shutter-btn" 
+              @click="captureAreaPhoto()" 
+              :disabled="isProcessingCapture"
+              aria-label="Fotó készítése"
+            >
+              <span class="camera-shutter-inner"></span>
+              <span>Fotó készítése</span>
+            </button>
+          </template>
+
+          <!-- Lista fázis: 3 gomb (Újrafotózás, Új kép készítése, Tovább a javaslatokra) -->
+          <template x-if="areaCameraPhase === 'list'">
+            <div class="area-frozen-footer-buttons">
+              <button 
+                type="button" 
+                class="area-btn-action area-btn-retake" 
+                @click="retakeAreaPhoto()"
+                :title="isFileUploadedModal ? 'Vissza' : 'Aktuális fotó elvetése és újrafotózás'"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span x-text="isFileUploadedModal ? 'Vissza' : 'Újrafotózás'"></span>
+              </button>
+
+              <button 
+                type="button" 
+                class="area-btn-action area-btn-new-photo" 
+                x-show="!isFileUploadedModal"
+                @click="addNewAreaPhoto()"
+                title="Következő oldal fotózása és hozzáadása"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Új kép készítése</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="area-btn-action area-btn-primary" 
+                @click="finishAreaScannedToSuggestions()"
+              >
+                <span>Tovább a javaslatokra</span>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </template>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

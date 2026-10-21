@@ -1,0 +1,30 @@
+@using System.Security.Claims
+@using BTMNAdmin.Services
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FejlesztopedagogusService FejlesztopedagogusService
+
+<LabelModal IsOpen="IsOpen"
+            Title="Fejlesztőpedagógus nevének szerkesztése"
+            Label="Név"
+            InitialValue="@Nev"
+            MaxLength="150"
+            SaveAsync="SaveNevAsync"
+            OnSaved="OnSaved"
+            OnClose="OnClose" />
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string? Nev { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task<bool> SaveNevAsync(string nev)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return userId is not null
+            && await FejlesztopedagogusService.UpdateNevAsync(userId, nev);
+    }
+}

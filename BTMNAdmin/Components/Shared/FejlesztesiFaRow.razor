@@ -1,0 +1,68 @@
+<tr>
+    <td>
+        <div class="d-flex align-items-center gap-2" style="padding-left: @(Depth * 24)px">
+            @if (HasChildren)
+            {
+                <button type="button"
+                        class="btn btn-square btn-ghost btn-sm"
+                        aria-label="@(Expanded ? $"{Nev} összecsukása" : $"{Nev} kibontása")"
+                        aria-expanded="@Expanded"
+                        @onclick="OnToggle">
+                    <i class="bi @(Expanded ? "bi-chevron-down" : "bi-chevron-right")"
+                       aria-hidden="true"></i>
+                </button>
+            }
+            else
+            {
+                <span style="width: 28px" aria-hidden="true"></span>
+            }
+
+            <span class="badge text-bg-secondary">@Kind</span>
+            <span class="text-break @(Depth == 0 ? "fw-bold" : "")">@Nev</span>
+        </div>
+    </td>
+    <td class="text-end">
+        <div class="d-flex align-items-center justify-content-end gap-1">
+            @if (AddLabel is not null)
+            {
+                <button type="button"
+                        class="btn btn-ghost btn-sm"
+                        disabled="@Disabled"
+                        aria-label="@($"{Nev}: új {AddLabel.ToLowerInvariant()} felvétele")"
+                        @onclick="OnAdd">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> @AddLabel
+                </button>
+            }
+            <button type="button"
+                    class="btn btn-square btn-ghost btn-sm"
+                    disabled="@Disabled"
+                    aria-label="@($"{Nev} szerkesztése")"
+                    title="Szerkesztés"
+                    @onclick="OnEdit">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-square btn-ghost text-error btn-sm"
+                    disabled="@Disabled"
+                    aria-label="@($"{Nev} törlése")"
+                    title="Törlés"
+                    @onclick="OnDelete">
+                <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public int Depth { get; set; }
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public string Nev { get; set; } = "";
+    [Parameter] public string? AddLabel { get; set; }
+    [Parameter] public bool HasChildren { get; set; }
+    [Parameter] public bool Expanded { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback OnToggle { get; set; }
+    [Parameter] public EventCallback OnAdd { get; set; }
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+}

@@ -1,0 +1,218 @@
+@typeparam TLabel where TLabel : AbstractFejlesztoLabel, new()
+@using System.Security.Claims
+@using BTMNAdmin.Data
+@using BTMNAdmin.Services
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FejlesztopedagogusService FejlesztopedagogusService
+@inject IJSRuntime JS
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <span class="h5">@Metadata.Title</span>
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    aria-label="@Metadata.ModalTitleNew"
+                    title="@Metadata.ModalTitleNew"
+                    @onclick="OpenNewModal">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <CardList TItem="TLabel"
+                  Items="items"
+                  EmptyText="@Metadata.EmptyText">
+            <ItemContent Context="item">
+                <div class="d-flex align-items-center gap-2 w-100">
+                    <div class="label-activation-slot">
+                        @if (ActiveId == item.Id)
+                        {
+                            <button type="button" class="btn btn-success btn-sm w-100" disabled
+                                    aria-label="@($"{item.Nev} aktív")">
+                                Aktív
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-outline-success btn-sm w-100"
+                                    disabled="@(isActivating || isDeleting)"
+                                    aria-label="@($"{item.Nev} aktiválása")"
+                                    @onclick="() => ActivateAsync(item)">
+                                Aktiválás
+                            </button>
+                        }
+                    </div>
+
+                    <span class="font-medium text-break label-item-name">@item.Nev</span>
+
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0 ms-auto">
+                        <button type="button"
+                                class="btn btn-square btn-ghost btn-sm"
+                                aria-label="@($"{item.Nev} szerkesztése")"
+                                title="@($"{Metadata.SingularName} szerkesztése")"
+                                disabled="@(isActivating || isDeleting)"
+                                @onclick="() => OpenEditModal(item)">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-square btn-ghost text-error btn-sm"
+                                aria-label="@($"{item.Nev} törlése")"
+                                title="@($"{Metadata.SingularName} törlése")"
+                                disabled="@(isActivating || isDeleting)"
+                                @onclick="() => DeleteAsync(item)">
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </ItemContent>
+        </CardList>
+
+        @if (errorMessage is not null)
+        {
+            <p class="text-danger mt-2" role="alert">@errorMessage</p>
+        }
+    </div>
+</div>
+
+<LabelModal IsOpen="isModalOpen"
+            Title="@(editingItem is null ? Metadata.ModalTitleNew : Metadata.ModalTitleEdit)"
+            Label="@Metadata.ModalLabel"
+            InitialValue="@editingItem?.Nev"
+            MaxLength="@Metadata.MaxLength"
+            SaveAsync="SaveAsync"
+            OnSaved="ReloadItemsAsync"
+            OnClose="CloseModal" />
+
+@code {
+    private LabelDescriptor Metadata => LabelMetadata.For<TLabel>();
+
+    private List<TLabel> items = [];
+    private TLabel? editingItem;
+    private bool isModalOpen;
+    private bool isDeleting;
+    private string? errorMessage;
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        await ReloadItemsAsync();
+    }
+
+    private async Task ReloadItemsAsync()
+    {
+        if (currentUserId is null)
+            return;
+
+        pedagogus = await FejlesztopedagogusService
+            .GetFejlesztopedagogusAsync(currentUserId);
+        items = await FejlesztopedagogusService
+            .GetLabelsAsync<TLabel>(currentUserId);
+    }
+
+    private void OpenNewModal()
+    {
+        editingItem = null;
+        errorMessage = null;
+        isModalOpen = true;
+    }
+
+    private void OpenEditModal(TLabel item)
+    {
+        editingItem = item;
+        errorMessage = null;
+        isModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        isModalOpen = false;
+        editingItem = null;
+    }
+
+    private async Task<bool> SaveAsync(string nev)
+    {
+        if (currentUserId is null)
+            return false;
+
+        return await FejlesztopedagogusService.SaveLabelAsync<TLabel>(
+            currentUserId,
+            editingItem?.Id,
+            nev,
+            Metadata.MaxLength);
+    }
+
+    private async Task DeleteAsync(TLabel item)
+    {
+        if (isDeleting || currentUserId is null)
+            return;
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Biztosan törlöd a(z) „{item.Nev}” {Metadata.AccusativeName}?");
+
+        if (!confirmed)
+            return;
+
+        isDeleting = true;
+        errorMessage = null;
+
+        try
+        {
+            var success = await FejlesztopedagogusService.DeleteLabelAsync<TLabel>(currentUserId, item.Id);
+            if (!success)
+            {
+                errorMessage = $"Nem sikerült törölni a(z) {Metadata.AccusativeName}.";
+                return;
+            }
+
+            await ReloadItemsAsync();
+        }
+        catch
+        {
+            errorMessage = $"Nem sikerült törölni a(z) {Metadata.AccusativeName}. Próbáld újra.";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+
+    private Fejlesztopedagogus? pedagogus;
+    private bool isActivating;
+
+    private int? ActiveId =>
+        typeof(TLabel) == typeof(Iskola) ? pedagogus?.ActiveIskola :
+        typeof(TLabel) == typeof(Szakszolgalat) ? pedagogus?.ActiveSzakszolgalat :
+        typeof(TLabel) == typeof(Tanev) ? pedagogus?.ActiveTanev : null;
+
+    private async Task ActivateAsync(TLabel item)
+    {
+        if (isActivating || isDeleting || currentUserId is null)
+            return;
+
+        isActivating = true;
+        errorMessage = null;
+        try
+        {
+            if (!await FejlesztopedagogusService.SetActiveLabelAsync<TLabel>(
+                    currentUserId, item.Id))
+            {
+                errorMessage = "Nem sikerült aktiválni az elemet.";
+                return;
+            }
+
+            await ReloadItemsAsync();
+        }
+        catch
+        {
+            errorMessage = "Nem sikerült aktiválni az elemet. Próbáld újra.";
+        }
+        finally
+        {
+            isActivating = false;
+        }
+    }
+}

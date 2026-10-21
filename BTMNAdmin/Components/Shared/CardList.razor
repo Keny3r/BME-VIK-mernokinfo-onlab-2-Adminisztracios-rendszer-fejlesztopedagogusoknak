@@ -1,0 +1,23 @@
+@typeparam TItem
+
+@if (Items.Count == 0)
+{
+    <p class="text-muted mb-0">@EmptyText</p>
+}
+else
+{
+    <ul class="divide-list">
+        @foreach (var item in Items)
+        {
+            <li class="divide-item">
+                @ItemContent(item)
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+    [Parameter, EditorRequired] public string EmptyText { get; set; } = "";
+    [Parameter, EditorRequired] public RenderFragment<TItem> ItemContent { get; set; } = default!;
+}

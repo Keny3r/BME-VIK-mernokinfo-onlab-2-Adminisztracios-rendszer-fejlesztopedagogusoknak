@@ -39,7 +39,15 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(
+    options => options.UseSqlServer(connectionString),
+    ServiceLifetime.Scoped);
+
 builder.Services.AddScoped<FejlesztopedagogusService>();
+builder.Services.AddScoped<FejlesztesiFaService>();
 builder.Services.AddScoped<RegistrationService>();
 
 var app = builder.Build();
@@ -66,5 +74,8 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapGet("/api/fejlesztesi-tervek/profil", ProfilAPI.getProfilData)
+    .RequireAuthorization();
 
 app.Run(url: "http://localhost:5001");

@@ -1,0 +1,128 @@
+@using System.ComponentModel.DataAnnotations
+
+<AppModal IsOpen="IsOpen" Title="@Title" OnClose="Close">
+    <EditForm Model="input" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+
+        <label for="@inputId" class="form-label">@Label</label>
+        <InputText id="@inputId"
+                   class="form-control"
+                   maxlength="@MaxLength"
+                   @bind-Value="input.Nev" />
+        <ValidationMessage For="() => input.Nev" class="text-danger" />
+
+        @if (error is not null)
+        {
+            <p class="text-danger mt-2" role="alert">@error</p>
+        }
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button"
+                    class="btn btn-secondary"
+                    disabled="@isSaving"
+                    @onclick="Close">
+                Mégse
+            </button>
+            <button type="submit"
+                    class="btn btn-primary"
+                    disabled="@isSaving">
+                Mentés
+            </button>
+        </div>
+    </EditForm>
+</AppModal>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string Label { get; set; } = "Név";
+    [Parameter] public string? InitialValue { get; set; }
+    [Parameter] public int MaxLength { get; set; } = 200;
+
+    // true: sikerült a mentés; false: pl. nem található a profil vagy az elem.
+    [Parameter, EditorRequired] public Func<string, Task<bool>> SaveAsync { get; set; } = default!;
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private readonly string inputId = $"label-{Guid.NewGuid():N}";
+    private LabelInput input = new();
+    private bool wasOpen;
+    private bool isSaving;
+    private string? error;
+
+    protected override void OnParametersSet()
+    {
+        // Csak megnyitáskor inicializálunk: egy szülő-render ne törölje
+        // ki a felhasználó éppen begépelt szövegét.
+        if (IsOpen && !wasOpen)
+        {
+            input = new LabelInput { Nev = InitialValue ?? "" };
+            error = null;
+        }
+
+        wasOpen = IsOpen;
+    }
+
+    private async Task Close()
+    {
+        if (!isSaving)
+            await OnClose.InvokeAsync();
+    }
+
+    private async Task Save()
+    {
+        if (isSaving)
+            return;
+
+        var nev = input.Nev.Trim();
+
+        if (nev.Length == 0)
+        {
+            error = "A név nem lehet üres.";
+            return;
+        }
+
+        if (nev.Length > MaxLength)
+        {
+            error = $"A név legfeljebb {MaxLength} karakter lehet.";
+            return;
+        }
+
+        isSaving = true;
+        error = null;
+
+        try
+        {
+            bool saved;
+
+            try
+            {
+                saved = await SaveAsync(nev);
+            }
+            catch
+            {
+                error = "Nem sikerült menteni. Próbáld újra.";
+                return;
+            }
+
+            if (!saved)
+            {
+                error = "Nem sikerült menteni: a profil vagy az elem nem található.";
+                return;
+            }
+
+            await OnSaved.InvokeAsync();
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class LabelInput
+    {
+        [Required(ErrorMessage = "A név megadása kötelező.")]
+        public string Nev { get; set; } = "";
+    }
+}

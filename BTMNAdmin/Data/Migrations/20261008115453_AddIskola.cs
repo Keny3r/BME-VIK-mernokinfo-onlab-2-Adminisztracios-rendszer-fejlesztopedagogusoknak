@@ -1,0 +1,46 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace BTMNAdmin.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddIskola : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Iskolak",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FejlesztopedagogusId = table.Column<int>(type: "int", nullable: false),
+                    Nev = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Iskolak", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Iskolak_Fejlesztopedagogusok_FejlesztopedagogusId",
+                        column: x => x.FejlesztopedagogusId,
+                        principalTable: "Fejlesztopedagogusok",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Iskolak_FejlesztopedagogusId",
+                table: "Iskolak",
+                column: "FejlesztopedagogusId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "Iskolak");
+        }
+    }
+}

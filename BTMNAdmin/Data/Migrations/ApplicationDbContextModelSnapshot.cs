@@ -88,6 +88,75 @@ namespace BTMNAdmin.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiCel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LabelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LabelId");
+
+                    b.ToTable("FejlesztesiCelok", (string)null);
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiEszkoz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LabelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LabelId");
+
+                    b.ToTable("FejlesztesiEszkozok", (string)null);
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiTerulet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FejlesztopedagogusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FejlesztopedagogusId");
+
+                    b.ToTable("FejlesztesiTeruletek", (string)null);
+                });
+
             modelBuilder.Entity("BTMNAdmin.Data.Fejlesztopedagogus", b =>
                 {
                     b.Property<int>("Id")
@@ -95,6 +164,15 @@ namespace BTMNAdmin.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActiveIskola")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ActiveSzakszolgalat")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ActiveTanev")
+                        .HasColumnType("int");
 
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
@@ -111,6 +189,75 @@ namespace BTMNAdmin.Migrations
                         .IsUnique();
 
                     b.ToTable("Fejlesztopedagogusok", (string)null);
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Iskola", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FejlesztopedagogusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FejlesztopedagogusId");
+
+                    b.ToTable("Iskolak", (string)null);
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Szakszolgalat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FejlesztopedagogusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FejlesztopedagogusId");
+
+                    b.ToTable("Szakszolgalatok", (string)null);
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Tanev", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FejlesztopedagogusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nev")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FejlesztopedagogusId");
+
+                    b.ToTable("Tanevek", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -267,6 +414,39 @@ namespace BTMNAdmin.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiCel", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.FejlesztesiTerulet", "Label")
+                        .WithMany()
+                        .HasForeignKey("LabelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Label");
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiEszkoz", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.FejlesztesiCel", "Label")
+                        .WithMany()
+                        .HasForeignKey("LabelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Label");
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.FejlesztesiTerulet", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.Fejlesztopedagogus", "Fejlesztopedagogus")
+                        .WithMany("FejlesztesiTeruletek")
+                        .HasForeignKey("FejlesztopedagogusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fejlesztopedagogus");
+                });
+
             modelBuilder.Entity("BTMNAdmin.Data.Fejlesztopedagogus", b =>
                 {
                     b.HasOne("BTMNAdmin.Data.ApplicationUser", "ApplicationUser")
@@ -276,6 +456,39 @@ namespace BTMNAdmin.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Iskola", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.Fejlesztopedagogus", "Fejlesztopedagogus")
+                        .WithMany("Iskolak")
+                        .HasForeignKey("FejlesztopedagogusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fejlesztopedagogus");
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Szakszolgalat", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.Fejlesztopedagogus", "Fejlesztopedagogus")
+                        .WithMany("Szakszolgalatok")
+                        .HasForeignKey("FejlesztopedagogusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fejlesztopedagogus");
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Tanev", b =>
+                {
+                    b.HasOne("BTMNAdmin.Data.Fejlesztopedagogus", "Fejlesztopedagogus")
+                        .WithMany("Tanevek")
+                        .HasForeignKey("FejlesztopedagogusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fejlesztopedagogus");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -378,6 +591,17 @@ namespace BTMNAdmin.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BTMNAdmin.Data.Fejlesztopedagogus", b =>
+                {
+                    b.Navigation("FejlesztesiTeruletek");
+
+                    b.Navigation("Iskolak");
+
+                    b.Navigation("Szakszolgalatok");
+
+                    b.Navigation("Tanevek");
                 });
 #pragma warning restore 612, 618
         }

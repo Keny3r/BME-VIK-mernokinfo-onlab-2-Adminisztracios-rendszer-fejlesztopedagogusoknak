@@ -1,0 +1,10 @@
+{
+  "name": "btmnadmin",
+  "version": "1.0.0",
+  "description": "BTMN Admin - Fejlesztési Terv Készítő Alkalmazás",
+  "scripts": {
+    "test": "node --test test/services.test.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

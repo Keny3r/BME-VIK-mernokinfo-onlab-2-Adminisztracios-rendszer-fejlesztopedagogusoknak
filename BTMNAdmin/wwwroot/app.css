@@ -143,6 +143,40 @@ a:hover, .btn-link:hover {
     border-color: var(--color-error);
 }
 
+.btn-ghost {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--color-base-content);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus {
+    background-color: var(--color-base-300);
+    border-color: transparent;
+    color: var(--color-base-content);
+}
+
+.btn-square {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+}
+
+.btn-square.btn-sm {
+    width: 28px;
+    height: 28px;
+}
+
+.btn-ghost.text-error {
+    color: var(--color-error);
+}
+
+.btn-ghost.text-error:hover,
+.btn-ghost.text-error:focus {
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
+}
+
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
@@ -168,6 +202,39 @@ a:hover, .btn-link:hover {
     font-weight: 700;
     color: var(--color-base-content);
     margin-bottom: 0.35rem;
+}
+
+/* ================= Listák (Lists - demó alapján) ================= */
+.divide-list {
+    list-style: none;
+    border: 1px solid var(--color-base-300);
+    border-radius: var(--radius-box);
+    background-color: var(--color-base-100);
+    overflow: hidden;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.divide-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-base-300);
+    transition: background-color 0.15s ease;
+}
+
+.divide-item:last-child {
+    border-bottom: none;
+}
+
+.divide-item:hover {
+    background-color: rgba(247, 243, 238, 0.6);
+}
+
+.font-medium {
+    font-weight: 500;
 }
 
 /* ================= Űrlapok és Beviteli Mezők ================= */
@@ -337,4 +404,13 @@ a:hover, .btn-link:hover {
 
 .blazor-error-boundary::after {
     content: "Hiba történt az oldal megjelenítése közben.";
+}
+
+.label-activation-slot {
+    flex: 0 0 7rem;
+}
+
+.label-item-name {
+    flex: 1;
+    min-width: 0;
 }

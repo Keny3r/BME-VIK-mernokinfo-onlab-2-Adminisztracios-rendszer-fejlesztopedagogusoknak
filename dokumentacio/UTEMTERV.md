@@ -35,7 +35,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
         - Elvárt eredmény
             - A demóban látható Fejlesztési Területek menü elkészül
                 - A [fejlesztési fa](./DEFINICIOK.md#fejlesztési-fa) egy újrafelhasználható komponensben látható és szerkeszthető lesz a felületen.
-- **10.26.**
+- **10.22.**
     - [Gyermekek](./FUNKCIOK.md#gyermekek) menü implementálása
         - A cél az, hogy a gyermekek adatai megfelelően kerüljenek be az adatbázisba minél kevesebb UI lépésben. A fejlesztési tervek generálásával még nem foglalkozunk.
         - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
@@ -46,7 +46,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Gyermekek menü
         - Elvárt eredmény
             - A demóban látható Gyermekek menü elkészül (PDF generálás nélkül)
-- **11.02.**
+- **10.29.**
     - [Fejlesztési tervek](./DEFINICIOK.md#fejlesztési-terv) generálása
         - PDF generátor endpoint létrehozása
             - FejlesztesiTervPdfService
@@ -57,7 +57,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
         - Elvárt eredmény
             - Fejlesztési terveket tudjunk generálni.
 - Ezen a ponton mérlegelném a [szakértői vélemények beolvasása funkció](./FUNKCIOK.md#szakértői-vélemények-beolvasása) implementálását.
-- **11.09.**
+- **11.05.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 1
         - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
             - Foglalkozások
@@ -65,7 +65,7 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Foglalkozások menü, komplex modalok nélkül.
         - Elvárt eredmény
             - Lehessen felvenni, szerkeszteni és törölni egy-egy foglalkozást. A megvalósulási számokkal még nem foglalkozunk.
-- **11.16.**
+- **11.12.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 2
         - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját
             - A fejlesztési tervek megvalósulásának számítása
@@ -73,13 +73,13 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Teljes, megvalósulási számokkal segítséget nyújtó modal a foglalkozások menüben
         - Elvárt eredmény
             - A már felvehető foglalkozásokat bővítsük a megvalósulási számokkal, legyen másolható KRÉTA órai munka.
-- **11.23.**
+- **11.19.**
     - [Szöveges értékelés](./DEFINICIOK.md#szöveges-értékelés) generátor implementálása
         - PDF generátor endpoint létrehozása
             - SzovegesErtekelesPdfService
         - Elvárt eredmény
             - Szöveges értékeléseket tudjunk generálni.
-- **11.30.**
+- **11.26.**
     - [Fizetési Flow](./FUNKCIOK.md#fizetési-flow) implementálása
         - Stripe bekötése
         - Stripe integrációja a PDF generátor endpointokkal
@@ -88,13 +88,13 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
             - Fizetési flow a PDF generátorok menüiben.
         - Elvárt eredmény
             - Az alkalmazás fizetéssel együtt működik.
-- **12.07.**
+- **12.03.**
     - Manuális end-to-end tesztek írása
         - Deployment előtti checklist írása.
             - Persze nem fogjuk élesíteni az appot, de egy valós projektnél fontos lenne.
     - Automata end-to-end tesztek írása a legkritikusabb funkciókra (bejelentkezés, pdf generálás)
     - Elvárt eredmény
         - Minden funkció kész és a leírtaknak megfelelően működik
-- **12.14.**
+- **12.10.**
     - Önlab dokumentáció elkészítése
     - Prezentáció elkészítése

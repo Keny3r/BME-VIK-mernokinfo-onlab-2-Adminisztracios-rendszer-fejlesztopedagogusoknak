@@ -21,9 +21,10 @@ main {
     background-color: #ffffff;
     border-bottom: 1px solid #e9e2d5;
     justify-content: flex-end;
-    height: 60px;
+    height: 3.5rem;
     display: flex;
     align-items: center;
+    margin-bottom: 14px;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {

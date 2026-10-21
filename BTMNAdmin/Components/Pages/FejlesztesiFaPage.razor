@@ -1,0 +1,280 @@
+@page "/fejlesztesi-fa"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using BTMNAdmin.Components.Shared
+@using BTMNAdmin.Services
+@using Microsoft.AspNetCore.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FejlesztesiFaService FaService
+@inject IJSRuntime JS
+
+<PageTitle>Fejlesztési Fa – BTMN Admin</PageTitle>
+
+<h1><i class="bi bi-list-nested text-primary me-2" aria-hidden="true"></i>Fejlesztési Fa</h1>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <h2 class="h5 mb-0">Fejlesztési repertoár</h2>
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    disabled="@busy"
+                    @onclick="() => OpenCreate(NodeType.Terulet)">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                Új terület felvétele
+            </button>
+        </div>
+
+        <hr />
+
+        @if (loading)
+        {
+            <p class="text-muted">Betöltés…</p>
+        }
+        else if (fa is null || fa.Teruletek.Count == 0)
+        {
+            <p class="text-muted mb-0">Még nincs felvéve fejlesztési terület.</p>
+        }
+        else
+        {
+            <div class="table-responsive border rounded-3">
+                <table class="table align-middle w-100 mb-0">
+                    <thead>
+                        <tr>
+                            <th>Megnevezés</th>
+                            <th class="text-end" style="width: 1%">Műveletek</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var terulet in fa.Teruletek)
+                        {
+                            <FejlesztesiFaRow @key="terulet"
+                                             Depth="0"
+                                             Kind="Terület"
+                                             Nev="@terulet.Nev"
+                                             AddLabel="Cél"
+                                             HasChildren="@(terulet.Celok.Count > 0)"
+                                             Expanded="@expandedTeruletek.Contains(terulet.Id)"
+                                             Disabled="@busy"
+                                             OnToggle="() => Toggle(expandedTeruletek, terulet.Id)"
+                                             OnAdd="() => OpenCreate(NodeType.Cel, terulet.Id)"
+                                             OnEdit="() => OpenEdit(NodeType.Terulet, terulet.Id, terulet.Nev)"
+                                             OnDelete="() => DeleteAsync(NodeType.Terulet, terulet.Id, terulet.Nev)" />
+
+                            @if (expandedTeruletek.Contains(terulet.Id))
+                            {
+                                @foreach (var cel in terulet.Celok)
+                                {
+                                    <FejlesztesiFaRow @key="cel"
+                                                     Depth="1"
+                                                     Kind="Cél"
+                                                     Nev="@cel.Nev"
+                                                     AddLabel="Eszköz"
+                                                     HasChildren="@(cel.Eszkozok.Count > 0)"
+                                                     Expanded="@expandedCelok.Contains(cel.Id)"
+                                                     Disabled="@busy"
+                                                     OnToggle="() => Toggle(expandedCelok, cel.Id)"
+                                                     OnAdd="() => OpenCreate(NodeType.Eszkoz, cel.Id)"
+                                                     OnEdit="() => OpenEdit(NodeType.Cel, cel.Id, cel.Nev)"
+                                                     OnDelete="() => DeleteAsync(NodeType.Cel, cel.Id, cel.Nev)" />
+
+                                    @if (expandedCelok.Contains(cel.Id))
+                                    {
+                                        @foreach (var eszkoz in cel.Eszkozok)
+                                        {
+                                            <FejlesztesiFaRow @key="eszkoz"
+                                                             Depth="2"
+                                                             Kind="Eszköz"
+                                                             Nev="@eszkoz.Nev"
+                                                             Disabled="@busy"
+                                                             OnEdit="() => OpenEdit(NodeType.Eszkoz, eszkoz.Id, eszkoz.Nev)"
+                                                             OnDelete="() => DeleteAsync(NodeType.Eszkoz, eszkoz.Id, eszkoz.Nev)" />
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (errorMessage is not null)
+        {
+            <p class="text-danger mt-2" role="alert">@errorMessage</p>
+        }
+    </div>
+</div>
+
+<LabelModal IsOpen="@modalOpen"
+            Title="@ModalTitle"
+            Label="@($"{TypeName} megnevezése")"
+            InitialValue="@editingName"
+            MaxLength="200"
+            SaveAsync="SaveAsync"
+            OnSaved="ReloadAsync"
+            OnClose="CloseModal" />
+
+@code {
+    private enum NodeType { Terulet, Cel, Eszkoz }
+
+    private FejlesztesiFa? fa;
+    private string? userId;
+    private string? errorMessage;
+    private bool loading = true;
+    private bool busy;
+    private bool modalOpen;
+    private NodeType modalType;
+    private int? editingId;
+    private int? parentId;
+    private string? editingName;
+
+    private readonly HashSet<int> expandedTeruletek = [];
+    private readonly HashSet<int> expandedCelok = [];
+
+    private string TypeName => modalType switch
+    {
+        NodeType.Terulet => "Fejlesztési terület",
+        NodeType.Cel => "Fejlesztési cél",
+        _ => "Fejlesztési eszköz"
+    };
+
+    private string ModalTitle =>
+        $"{(editingId is null ? "Új" : "Szerkesztés:")} {TypeName.ToLowerInvariant()}" +
+        (editingId is null ? " felvétele" : "");
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userId = state.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await ReloadAsync();
+        loading = false;
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (userId is null)
+        {
+            errorMessage = "Nem található bejelentkezett felhasználó.";
+            return;
+        }
+
+        try
+        {
+            fa = await FaService.GetFejlesztesiFaAsync(userId);
+            errorMessage = null;
+        }
+        catch
+        {
+            errorMessage = "Nem sikerült betölteni a fejlesztési fát. Frissítsd az oldalt.";
+        }
+    }
+
+    private static void Toggle(HashSet<int> expanded, int id)
+    {
+        if (!expanded.Add(id))
+            expanded.Remove(id);
+    }
+
+    private void OpenCreate(NodeType type, int? newParentId = null)
+    {
+        modalType = type;
+        parentId = newParentId;
+        editingId = null;
+        editingName = null;
+        modalOpen = true;
+    }
+
+    private void OpenEdit(NodeType type, int id, string nev)
+    {
+        modalType = type;
+        editingId = id;
+        editingName = nev;
+        parentId = null;
+        modalOpen = true;
+    }
+
+    private void CloseModal() => modalOpen = false;
+
+    private async Task<bool> SaveAsync(string nev)
+    {
+        if (userId is null)
+            return false;
+
+        if (editingId is int id)
+        {
+            return modalType switch
+            {
+                NodeType.Terulet => await FaService.SetTeruletNevAsync(userId, id, nev),
+                NodeType.Cel => await FaService.SetCelNevAsync(userId, id, nev),
+                _ => await FaService.SetEszkozNevAsync(userId, id, nev)
+            };
+        }
+
+        int? created = modalType switch
+        {
+            NodeType.Terulet => await FaService.CreateTeruletAsync(userId, nev),
+            NodeType.Cel when parentId is int teruletId =>
+                await FaService.CreateCelAsync(userId, teruletId, nev),
+            NodeType.Eszkoz when parentId is int celId =>
+                await FaService.CreateEszkozAsync(userId, celId, nev),
+            _ => null
+        };
+
+        if (created is null)
+            return false;
+
+        // Keep the newly created item visible after reloading.
+        if (modalType == NodeType.Cel && parentId is int tId)
+            expandedTeruletek.Add(tId);
+        if (modalType == NodeType.Eszkoz && parentId is int cId)
+            expandedCelok.Add(cId);
+
+        return true;
+    }
+
+    private async Task DeleteAsync(NodeType type, int id, string nev)
+    {
+        if (busy || userId is null)
+            return;
+
+        var descendants = type switch
+        {
+            NodeType.Terulet => " A terület összes célja és eszköze is törlődik.",
+            NodeType.Cel => " A cél összes eszköze is törlődik.",
+            _ => ""
+        };
+
+        if (!await JS.InvokeAsync<bool>(
+                "confirm", $"Biztosan törlöd a(z) „{nev}” elemet?{descendants}"))
+            return;
+
+        busy = true;
+        errorMessage = null;
+        try
+        {
+            var deleted = type switch
+            {
+                NodeType.Terulet => await FaService.DeleteTeruletAsync(userId, id),
+                NodeType.Cel => await FaService.DeleteCelAsync(userId, id),
+                _ => await FaService.DeleteEszkozAsync(userId, id)
+            };
+
+            if (deleted)
+                await ReloadAsync();
+            else
+                errorMessage = "Az elem nem található, vagy nem sikerült törölni.";
+        }
+        catch
+        {
+            errorMessage = "Nem sikerült törölni az elemet. Próbáld újra.";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}
