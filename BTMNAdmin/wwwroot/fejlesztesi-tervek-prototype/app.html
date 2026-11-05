@@ -8,7 +8,6 @@
 
   <!-- Betűtípusok és adatok -->
   <script src="fonts/fonts-base64.js"></script>
-  <script src="js/data/teruletek-data.js"></script>
 
   <!-- Kliensoldali könyvtárak (helyi vendor fájlok) -->
   <script src="vendor/fuzzball.umd.min.js"></script>
@@ -30,17 +29,28 @@
 <body>
 
   <div class="app-container" x-data="btmnApp">
-
-    <header class="app-header">
-      <h1>BTMN Admin</h1>
-    </header>
-
     <!-- Lépésjelző sáv -->
     <div class="step-nav">
       <div class="step-indicator" :class="{ 'active': currentStep === 1, 'completed': currentStep > 1 }"></div>
       <div class="step-indicator" :class="{ 'active': currentStep === 2 || currentStep === 3, 'completed': currentStep > 3 }"></div>
       <div class="step-indicator" :class="{ 'active': currentStep >= 4 && currentStep <= 6, 'completed': currentStep === 7 }"></div>
       <div class="step-indicator" :class="{ 'active': currentStep === 7 }"></div>
+    </div>
+
+    <div
+      class="card"
+      x-show="fejlesztesiFaError"
+      x-cloak
+      role="alert"
+    >
+      <p x-text="fejlesztesiFaError"></p>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="loadFejlesztesiFaData()"
+      >
+        Újrapróbálkozás
+      </button>
     </div>
 
     <!-- 1. LÉPÉS: ALAP ADATOK -->
@@ -265,7 +275,7 @@
               x-model="gyermek.fejlesztesFormaja"
             >
             <datalist id="formakList">
-              <template x-for="item in history.formak" :key="item">
+              <template x-for="item in formakSuggestions" :key="item">
                 <option :value="item"></option>
               </template>
             </datalist>
@@ -609,11 +619,11 @@
               </div>
             </template>
             <template x-if="areaCameraPhase === 'list'">
-              <span class="camera-step-counter" x-text="`${getSelectedScannedCount()} / ${areaScannedList.length} sor kijelölve`"></span>
+              <span class="camera-step-counter" x-text="`${areaScannedList.length} sor beolvasva`"></span>
             </template>
             <h3 class="camera-field-label">
               <span x-show="areaCameraPhase === 'live'">Fejlesztési területek fotózása</span>
-              <span x-show="areaCameraPhase === 'list'">Beolvasott sorok jóváhagyása</span>
+              <span x-show="areaCameraPhase === 'list'">Fotó feldolgozva</span>
             </h3>
           </div>
           <button type="button" class="camera-btn-close" @click="cancelAreaCamera()" aria-label="Bezárás">
@@ -651,48 +661,23 @@
           </div>
         </div>
 
-        <!-- Beolvasott szövegsorok listája (Lista fázis - fotó helyett a kinyert sorok) -->
+        <!-- Rövid visszajelzés fotózás után (a pipálós lista helyett) -->
         <div class="area-scanned-list-wrapper" x-show="areaCameraPhase === 'list'">
           <div class="area-scanned-list-card">
-            <div class="area-scanned-list-header">
-              <div>
-                <h4 class="area-scanned-title">Felismertebb szövegsorok</h4>
-                <p class="area-scanned-subtitle">
-                  Pipáld be a megtartani kívánt sorokat (a 65% felettiek automatikusan kijelölve).
-                </p>
-              </div>
-              <span class="list-badge" x-text="`${getSelectedScannedCount()} / ${areaScannedList.length} kijelölve`"></span>
+            <div class="area-empty-notice-box" x-show="areaLastPhotoCount > 0">
+              <svg class="success-icon" style="width: 48px; height: 48px; margin-bottom: 10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <h4 class="area-scanned-title" x-text="`${areaLastPhotoCount} sor beolvasva az aktuális képről`"></h4>
+              <p class="area-scanned-subtitle" style="margin-top: 6px;" x-show="areaPhotoBatches.length > 1" x-text="`Összesen ${areaScannedList.length} egyedi sor gyűjtve (${areaPhotoBatches.length} képből).`"></p>
+              <p class="area-empty-sub" style="margin-top: 10px;">Folytathatod a javaslatok átnézésével, vagy készíthetsz újabb képet.</p>
             </div>
 
-            <!-- Üres állapot, ha nem volt felismerhető sor -->
-            <div class="area-empty-notice-box" x-show="areaScannedList.length === 0">
-              <p>Nem található észlelt szövegsor a fotón.</p>
+            <!-- Üres állapot, ha az aktuális fotón nem volt felismerhető sor -->
+            <div class="area-empty-notice-box" x-show="areaLastPhotoCount === 0">
+              <p>Nem található észlelt fejlesztési terület ezen a fotón.</p>
               <p class="area-empty-sub">Kérjük, készíts új, élesebb fotót közelebbről, jó megvilágítás mellett!</p>
-            </div>
-
-            <!-- Sorok listája -->
-            <div class="area-scanned-items" x-show="areaScannedList.length > 0">
-              <template x-for="item in areaScannedList" :key="item.id">
-                <div 
-                  class="scanned-row-item" 
-                  :class="{ 'selected': item.selected, 'low-score': item.score < 65 }"
-                  @click="toggleScannedItem(item)"
-                >
-                  <div class="scanned-checkbox">
-                    <span class="check-box-indicator" :class="{ 'checked': item.selected }">
-                      <svg x-show="item.selected" class="check-svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                      </svg>
-                    </span>
-                  </div>
-                  <div class="scanned-text-wrap">
-                    <span class="scanned-text" x-text="item.text"></span>
-                  </div>
-                  <div class="scanned-score-tag" x-show="item.score !== undefined && item.score !== null">
-                    <span :class="item.score >= 65 ? 'score-high' : 'score-low'" x-text="`${item.score}%`"></span>
-                  </div>
-                </div>
-              </template>
+              <p class="area-scanned-subtitle" style="margin-top: 10px;" x-show="areaScannedList.length > 0" x-text="`Korábbi képekből már ${areaScannedList.length} sor be van olvasva.`"></p>
             </div>
           </div>
         </div>

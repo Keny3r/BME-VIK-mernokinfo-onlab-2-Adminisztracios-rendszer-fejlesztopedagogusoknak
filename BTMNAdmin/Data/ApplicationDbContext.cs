@@ -14,6 +14,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<FejlesztesiTerulet> FejlesztesiTeruletek => Set<FejlesztesiTerulet>();
     public DbSet<FejlesztesiCel> FejlesztesiCelok => Set<FejlesztesiCel>();
     public DbSet<FejlesztesiEszkoz> FejlesztesiEszkozok => Set<FejlesztesiEszkoz>();
+    public DbSet<NevLabel> NevLabelek => Set<NevLabel>();
+    public DbSet<AnyjaNeveLabel> AnyjaNeveLabelek => Set<AnyjaNeveLabel>();
+    public DbSet<SzuletesiHelyEsIdoLabel> SzuletesiHelyEsIdoLabelek => Set<SzuletesiHelyEsIdoLabel>();
+    public DbSet<ForgalmiSzamLabel> ForgalmiSzamLabelek => Set<ForgalmiSzamLabel>();
+    public DbSet<IktatoszamLabel> IktatoszamLabelek => Set<IktatoszamLabel>();
+    public DbSet<FejlesztesFormajaLabel> FejlesztesFormajaLabelek => Set<FejlesztesFormajaLabel>();
 
     private static void AddFejlesztoLabel<T>(
         ModelBuilder builder,
@@ -85,6 +91,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         AddFejlesztoLabel(builder, "Szakszolgalatok", x => x.Szakszolgalatok);
         AddFejlesztoLabel(builder, "Tanevek", x => x.Tanevek);
         AddFejlesztoLabel(builder, "FejlesztesiTeruletek", x => x.FejlesztesiTeruletek);
+        AddFejlesztoLabel(builder, "NevLabelek", x => x.NevLabelek);
+        AddFejlesztoLabel(builder, "AnyjaNeveLabelek", x => x.AnyjaNeveLabelek);
+        AddFejlesztoLabel(builder, "SzuletesiHelyEsIdoLabelek", x => x.SzuletesiHelyEsIdoLabelek);
+        AddFejlesztoLabel(builder, "ForgalmiSzamLabelek", x => x.ForgalmiSzamLabelek);
+        AddFejlesztoLabel(builder, "IktatoszamLabelek", x => x.IktatoszamLabelek);
+        AddFejlesztoLabel(builder, "FejlesztesFormajaLabelek", x => x.FejlesztesFormajaLabelek);
         AddLabelLabel<FejlesztesiCel, FejlesztesiTerulet>(builder, "FejlesztesiCelok");
         AddLabelLabel<FejlesztesiEszkoz, FejlesztesiCel>(builder, "FejlesztesiEszkozok");
     }

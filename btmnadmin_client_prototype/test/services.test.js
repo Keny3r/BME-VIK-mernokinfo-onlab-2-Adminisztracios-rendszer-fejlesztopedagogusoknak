@@ -298,6 +298,47 @@ test('Integration - Area Camera snapshot selection list flow with 65+ threshold'
   assert.ok(matched[1].recommendations[0].score >= 65);
 });
 
+test('OcrService - configurable Beállítások labels support custom prefixes, OCR accent tolerance, and custom fejlesztés formája', () => {
+  try {
+    OcrService.setBeallitasokLabels({
+      nev: ['Vizsgált gyermek', 'Név'],
+      anyjaNeve: ['Édesanyja neve'],
+      szuletesiHelyEsIdo: ['Szül. hely, idő'],
+      forgalmiSzam: ['Ügyszám'],
+      iktatoszam: ['Hivatkozási szám'],
+      fejlesztesFormaja: ['egyéni', 'kiscsoportos', 'osztálykeretben']
+    });
+
+    const customDoc = `
+      Vizsgalt gyermek: Nagy Bence
+      Edesanyja neve: Tóth Klára
+      Szül. hely, idő: Szeged, 2016. 07. 21.
+      Ugyszam: U-555/2026
+      Hivatkozasi szam: H-777/2026
+      Fejlesztés formája: KISCSOPORTOS fejlesztés
+    `;
+
+    const parsed = OcrService.parseGyermekAdatai(customDoc);
+    assert.equal(parsed.nev, 'Nagy Bence');
+    assert.equal(parsed.anyjaNeve, 'Tóth Klára');
+    assert.equal(parsed.szuletesiHelyEsIdo, 'Szeged, 2016. 07. 21.');
+    assert.equal(parsed.forgalmiSzam, 'U-555/2026');
+    assert.equal(parsed.iktatoszam, 'H-777/2026');
+    assert.equal(parsed.fejlesztesFormaja, 'kiscsoportos');
+
+    // Camera field matching also uses the configured labels
+    assert.equal(OcrService.matchCameraField('nev', 'Vizsgált gyermek: Nagy Bence'), 'Nagy Bence');
+    assert.equal(OcrService.matchCameraField('forgalmiSzam', 'Ügyszám: U-555/2026'), 'U-555/2026');
+    assert.equal(OcrService.matchCameraField('fejlesztesFormaja', 'Javasolt: osztalykeretben történő ellátás'), 'osztálykeretben');
+    // 'csoportos' was removed from the list, so standalone 'csoportos' should not match
+    assert.equal(OcrService.matchCameraField('fejlesztesFormaja', 'csoportos foglalkozás'), null);
+  } finally {
+    // Reset to defaults
+    OcrService.setBeallitasokLabels(OcrService.DEFAULT_BEALLITASOK_LABELS);
+  }
+});
+
+
 
 
 

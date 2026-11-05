@@ -92,6 +92,25 @@ document.addEventListener('alpine:init', () => {
     areaScannedList: [],
     isFileUploadedModal: false,
 
+    beallitasokLabels: {
+      nev: [],
+      anyjaNeve: [],
+      szuletesiHelyEsIdo: [],
+      forgalmiSzam: [],
+      iktatoszam: [],
+      fejlesztesFormaja: ['egyéni', 'csoportos']
+    },
+
+    get formakSuggestions() {
+      const configured = Array.isArray(this.beallitasokLabels?.fejlesztesFormaja)
+        ? this.beallitasokLabels.fejlesztesFormaja
+        : [];
+      const hist = Array.isArray(this.history?.formak)
+        ? this.history.formak
+        : [];
+      return Array.from(new Set([...configured, ...hist]));
+    },
+
     get currentCameraField() {
       return this.cameraFields[this.currentCameraFieldIndex] || null;
     },
@@ -111,8 +130,13 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.loadInitialData();
       this.initTeruletekData();
-      if (window.OcrService && Array.isArray(window.OcrService.CAMERA_SCAN_FIELDS)) {
-        this.cameraFields = window.OcrService.CAMERA_SCAN_FIELDS;
+      if (window.OcrService) {
+        if (typeof window.OcrService.getBeallitasokLabels === 'function') {
+          this.beallitasokLabels = window.OcrService.getBeallitasokLabels();
+        }
+        if (Array.isArray(window.OcrService.CAMERA_SCAN_FIELDS)) {
+          this.cameraFields = window.OcrService.CAMERA_SCAN_FIELDS;
+        }
       }
     },
 

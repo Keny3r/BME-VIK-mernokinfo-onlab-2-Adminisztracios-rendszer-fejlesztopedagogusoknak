@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 class ProfilAPI
 {
-    public static async Task<IResult> getProfilData (
+    public static async Task<IResult> GetProfilData (
         HttpContext httpContext,
         UserManager<ApplicationUser> userManager,
         FejlesztopedagogusService pedagogusService)

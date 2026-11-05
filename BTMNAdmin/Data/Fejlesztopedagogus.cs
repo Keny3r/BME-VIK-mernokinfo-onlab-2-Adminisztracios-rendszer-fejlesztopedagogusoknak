@@ -13,4 +13,10 @@ public class Fejlesztopedagogus
     public int? ActiveTanev { get; set; } = null;
     public ICollection<Tanev> Tanevek { get; set; } = [];
     public ICollection<FejlesztesiTerulet> FejlesztesiTeruletek { get; set; } = [];
+    public ICollection<NevLabel> NevLabelek { get; set; } = [];
+    public ICollection<AnyjaNeveLabel> AnyjaNeveLabelek { get; set; } = [];
+    public ICollection<SzuletesiHelyEsIdoLabel> SzuletesiHelyEsIdoLabelek { get; set; } = [];
+    public ICollection<ForgalmiSzamLabel> ForgalmiSzamLabelek { get; set; } = [];
+    public ICollection<IktatoszamLabel> IktatoszamLabelek { get; set; } = [];
+    public ICollection<FejlesztesFormajaLabel> FejlesztesFormajaLabelek { get; set; } = [];
 }

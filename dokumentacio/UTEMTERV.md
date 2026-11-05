@@ -57,6 +57,63 @@ Az időpontok hétfő reggelekre vannak definiálva, de vasárnap éjfélként i
         - Elvárt eredmény
             - Fejlesztési terveket tudjunk generálni.
 - Ezen a ponton mérlegelném a [szakértői vélemények beolvasása funkció](./FUNKCIOK.md#szakértői-vélemények-beolvasása) implementálását.
+
+### OCR alapú beolvasás
+
+Végül a [szakértői vélemények beolvasása funkció](./FUNKCIOK.md#szakértői-vélemények-beolvasása) implementálása mellett döntottam.
+
+Az ütemterv így változik:
+
+- **11.05.**
+    - Konfigurálható beolvasás
+        - Két lehetőség:
+            - **Konfigurálható regex-ek**
+                - Előnyök
+                    - Gyors számítás
+                    - Több OCR beolvasás lehetséges valós időben
+                    - Testre szabható
+                - Hátrányok
+                    - Konfigurációs overhead
+                    - Manuális beállítás, ha a default-ok nem elegek
+            - **AI alapú megoldás**
+                - Előnyök
+                    - Univerzálisan működik
+                    - Felismeri a kontextust
+                - Hátrányok
+                    - Költséges feldolgozás (adott esetben lassú)
+- **11.12.**
+    - A beolvasási flow oda-vissza csatolása az adat-rétegben
+        - Minden, a kliensoldali alkalmazásban felvett adat kerüljön be az adat-rétegbe és fordítva
+        - Új profil adatok beírása
+            - Név, Iskolák, Szakszolgálatok stb. felvétele
+- **11.19.**
+    - [Fizetési Flow](./FUNKCIOK.md#fizetési-flow) implementálása
+        - Stripe bekötése
+        - Stripe integrációja a PDF generátor endpointokkal
+            - FizetesService
+        - Frontend
+            - Fizetési flow a PDF generátorok menüiben.
+        - Elvárt eredmény
+            - Az alkalmazás fizetéssel együtt működik.
+- **11.26.**
+    - Célok és felvétele a PDF generálás folyamatába
+        - Ne csak a területeket, hanem a célokat és eszközöket is ki lehessen választani
+- **12.03.**
+    - Manuális end-to-end tesztek írása
+        - Deployment előtti checklist írása.
+            - Persze nem fogjuk élesíteni az appot, de egy valós projektnél fontos lenne.
+    - Automata end-to-end tesztek írása a legkritikusabb funkciókra (bejelentkezés, pdf generálás)
+    - Elvárt eredmény
+        - Minden funkció kész és a leírtaknak megfelelően működik
+- **12.10.**
+    - Önlab dokumentáció elkészítése
+    - Prezentáció elkészítése
+
+
+### Depracated
+
+Végül az OCR megoldás fejlesztése mellett döntöttem.
+
 - **11.05.**
     - [Foglalkozások](./FUNKCIOK.md#foglalkozások) menü implementálása 1
         - Koncepciók, amiket osztályokra fordítok / implementálom az üzleti logikáját

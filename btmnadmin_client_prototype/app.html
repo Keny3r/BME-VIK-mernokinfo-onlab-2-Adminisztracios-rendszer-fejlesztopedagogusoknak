@@ -247,7 +247,7 @@
               x-model="gyermek.fejlesztesFormaja"
             >
             <datalist id="formakList">
-              <template x-for="item in history.formak" :key="item">
+              <template x-for="item in formakSuggestions" :key="item">
                 <option :value="item"></option>
               </template>
             </datalist>

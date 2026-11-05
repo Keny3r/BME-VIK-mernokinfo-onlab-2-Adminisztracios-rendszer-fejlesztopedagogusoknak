@@ -1,4 +1,4 @@
-﻿@implements IDisposable
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -17,6 +17,11 @@
                 <div class="nav-item px-3">
                     <a class="nav-link" href="/profil">
                         <span class="bi bi-person-fill nav-menu-bootstrap-icon" aria-hidden="true"></span> Profil
+                    </a>
+                </div>
+                <div class="nav-item px-3">
+                    <a class="nav-link" href="/beallitasok">
+                        <span class="bi bi-gear-fill nav-menu-bootstrap-icon" aria-hidden="true"></span> Beállítások
                     </a>
                 </div>
                 <div class="nav-item px-3">
@@ -66,4 +71,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-

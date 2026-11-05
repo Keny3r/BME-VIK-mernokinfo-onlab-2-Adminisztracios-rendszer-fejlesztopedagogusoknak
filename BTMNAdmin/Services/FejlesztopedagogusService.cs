@@ -81,8 +81,12 @@ public class FejlesztopedagogusService(
             db.Set<TLabel>().Add(entity);
             await db.SaveChangesAsync();
 
-            SetActiveId<TLabel>(pedagogus, entity.Id);
-            await db.SaveChangesAsync();
+            if (LabelMetadata.For<TLabel>().HasActive)
+            {
+                SetActiveId<TLabel>(pedagogus, entity.Id);
+                await db.SaveChangesAsync();
+            }
+
             await transaction.CommitAsync();
             return true;
         }
@@ -113,18 +117,21 @@ public class FejlesztopedagogusService(
         if (entity is null)
             return false;
 
-        var pedagogus = await db.Fejlesztopedagogusok.SingleAsync(p => p.Id == entity.FejlesztopedagogusId);
-
-        if (GetActiveId<TLabel>(pedagogus) == id)
+        if (LabelMetadata.For<TLabel>().HasActive)
         {
-            // Az Id alapján az utoljára hozzáadott megmaradó elem.
-            int? ujAktivId = await db.Set<TLabel>()
-                .Where(x => x.FejlesztopedagogusId == pedagogus.Id && x.Id != id)
-                .OrderByDescending(x => x.Id)
-                .Select(x => (int?)x.Id)
-                .FirstOrDefaultAsync();
+            var pedagogus = await db.Fejlesztopedagogusok.SingleAsync(p => p.Id == entity.FejlesztopedagogusId);
 
-            SetActiveId<TLabel>(pedagogus, ujAktivId);
+            if (GetActiveId<TLabel>(pedagogus) == id)
+            {
+                // Az Id alapján az utoljára hozzáadott megmaradó elem.
+                int? ujAktivId = await db.Set<TLabel>()
+                    .Where(x => x.FejlesztopedagogusId == pedagogus.Id && x.Id != id)
+                    .OrderByDescending(x => x.Id)
+                    .Select(x => (int?)x.Id)
+                    .FirstOrDefaultAsync();
+
+                SetActiveId<TLabel>(pedagogus, ujAktivId);
+            }
         }
 
         db.Set<TLabel>().Remove(entity);

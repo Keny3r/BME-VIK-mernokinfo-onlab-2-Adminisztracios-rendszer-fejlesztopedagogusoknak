@@ -1,0 +1,18 @@
+@page "/beallitasok"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+@using BTMNAdmin.Data
+@using BTMNAdmin.Components.Shared
+
+<PageTitle>Beállítások – BTMN Admin</PageTitle>
+
+<h1><i class="bi bi-gear-fill text-primary me-2" aria-hidden="true"></i>Beállítások</h1>
+
+<LabelSection TLabel="NevLabel" />
+<LabelSection TLabel="AnyjaNeveLabel" />
+<LabelSection TLabel="SzuletesiHelyEsIdoLabel" />
+<LabelSection TLabel="ForgalmiSzamLabel" />
+<LabelSection TLabel="IktatoszamLabel" />
+<LabelSection TLabel="FejlesztesFormajaLabel" />

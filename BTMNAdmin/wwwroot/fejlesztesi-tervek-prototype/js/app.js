@@ -52,6 +52,8 @@ document.addEventListener('alpine:init', () => {
     fullOcrText: '',
 
     // Területek állapota
+    fejlesztesiFa: null,
+    fejlesztesiFaError: '',
     allTeruletek: [],
     extractedLines: [],
     matchedLines: [],
@@ -90,12 +92,33 @@ document.addEventListener('alpine:init', () => {
     focusRingX: 0,
     focusRingY: 0,
     areaScannedList: [],
+    areaPhotoBatches: [],
+    areaLastPhotoCount: 0,
     isFileUploadedModal: false,
 
     profilSuggestions: {
       iskola: [],
       szakszolgalat: [],
       tanev: []
+    },
+
+    beallitasokLabels: {
+      nev: [],
+      anyjaNeve: [],
+      szuletesiHelyEsIdo: [],
+      forgalmiSzam: [],
+      iktatoszam: [],
+      fejlesztesFormaja: ['egyéni', 'csoportos']
+    },
+
+    get formakSuggestions() {
+      const configured = Array.isArray(this.beallitasokLabels?.fejlesztesFormaja)
+        ? this.beallitasokLabels.fejlesztesFormaja
+        : [];
+      const hist = Array.isArray(this.history?.formak)
+        ? this.history.formak
+        : [];
+      return Array.from(new Set([...configured, ...hist]));
     },
 
     get currentCameraField() {
@@ -150,6 +173,29 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadBeallitasokData() {
+      try {
+        const response = await fetch('/api/fejlesztesi-tervek/beallitasok', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' }
+        });
+
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error(`Beállítások-API: ${response.status}`);
+        }
+
+        const beallitasok = await response.json();
+        if (window.OcrService && typeof window.OcrService.setBeallitasokLabels === 'function') {
+          this.beallitasokLabels = window.OcrService.setBeallitasokLabels(beallitasok);
+        } else {
+          this.beallitasokLabels = beallitasok;
+        }
+      } catch (error) {
+        console.error('Nem sikerült betölteni a beállításokat:', error);
+      }
+    },
+
     // ==========================================
     // ÉLETCIKLUS ÉS ADATBETÖLTÉS
     // ==========================================
@@ -157,9 +203,15 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.loadInitialData();
       this.loadProfilData();
-      this.initTeruletekData();
-      if (window.OcrService && Array.isArray(window.OcrService.CAMERA_SCAN_FIELDS)) {
-        this.cameraFields = window.OcrService.CAMERA_SCAN_FIELDS;
+      this.loadBeallitasokData();
+      this.loadFejlesztesiFaData();
+      if (window.OcrService) {
+        if (typeof window.OcrService.getBeallitasokLabels === 'function') {
+          this.beallitasokLabels = window.OcrService.getBeallitasokLabels();
+        }
+        if (Array.isArray(window.OcrService.CAMERA_SCAN_FIELDS)) {
+          this.cameraFields = window.OcrService.CAMERA_SCAN_FIELDS;
+        }
       }
     },
 
@@ -176,23 +228,50 @@ document.addEventListener('alpine:init', () => {
       this.gyermek.felulvizsgalatIdeje = lastChild.felulvizsgalatIdeje || '';
     },
 
-    initTeruletekData() {
-      if (typeof window !== 'undefined' && window.TERULETEK_DATA && Array.isArray(window.TERULETEK_DATA.teruletek)) {
-        this.allTeruletek = JSON.parse(JSON.stringify(window.TERULETEK_DATA.teruletek));
-        this.allTeruletek.sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
-        this.syncUnselectedList();
-        return;
-      }
+    async loadFejlesztesiFaData() {
+      this.fejlesztesiFaError = '';
 
-      // Fallback helyi JSON betöltésre
-      fetch('js/data/teruletek.json')
-        .then(res => res.json())
-        .then(data => {
-          this.allTeruletek = data.teruletek || [];
-          this.allTeruletek.sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
-          this.syncUnselectedList();
-        })
-        .catch(e => console.error('Nem sikerült betölteni a teruletek.json-t:', e));
+      try {
+        const response = await fetch('/api/fejlesztesi-tervek/fejlesztesi-fa', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' }
+        });
+
+        if (!response.ok ||
+            !response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error(`Fejlesztési fa API: ${response.status}`);
+        }
+
+        const fa = await response.json();
+        if (!fa || !Array.isArray(fa.teruletek)) {
+          throw new Error('Érvénytelen fejlesztési fa válasz.');
+        }
+
+        // A teljes, azonosítókat is tartalmazó API-válasz későbbi használatra.
+        this.fejlesztesiFa = fa;
+
+        // A jelenlegi kiválasztó, illesztés és PDF számára kompatibilis alak.
+        this.allTeruletek = fa.teruletek
+          .map(terulet => ({
+            id: terulet.id,
+            nev: terulet.nev,
+            celok: (terulet.celok ?? []).map(cel => ({
+              id: cel.id,
+              nev: cel.nev,
+              eszkozok: (cel.eszkozok ?? []).map(eszkoz => eszkoz.nev)
+            }))
+          }))
+          .sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
+
+        this.syncUnselectedList();
+      } catch (error) {
+        console.error('Nem sikerült betölteni a fejlesztési fát:', error);
+        this.fejlesztesiFa = null;
+        this.allTeruletek = [];
+        this.syncUnselectedList();
+        this.fejlesztesiFaError = 'Nem sikerült betölteni a fejlesztési területeket.';
+      }
     },
 
     syncUnselectedList() {
@@ -626,36 +705,17 @@ document.addEventListener('alpine:init', () => {
           }
         });
 
-        const lines = (result.allCleanedLines && result.allCleanedLines.length > 0)
-          ? result.allCleanedLines
-          : window.OcrService.extractCleanedImageLines(result.fullText).filter(l => l.length >= 3);
+        const rawLines = (result.areaLines && result.areaLines.length > 0)
+          ? result.areaLines
+          : window.OcrService.parseTeruletSorokFromImage(result.fullText, this.allTeruletek, 65);
 
-        if (lines && lines.length > 0) {
-          this.areaScannedList = lines.map(line => {
-            let bestScore = 0;
-            let bestTerulet = null;
-            if (this.allTeruletek && this.allTeruletek.length > 0) {
-              for (const t of this.allTeruletek) {
-                const score = window.MatchingService.scoreMatch(t.nev, line);
-                if (score > bestScore) {
-                  bestScore = score;
-                  bestTerulet = t;
-                }
-                if (bestScore === 100) break;
-              }
-            }
-            return {
-              id: 'scan_' + Math.random().toString(36).substring(2, 9),
-              text: line,
-              score: bestScore,
-              bestTerulet: bestTerulet,
-              selected: bestScore >= 65
-            };
-          });
+        const lines = (rawLines || [])
+          .map(l => l.replace(/[\s:;.,\-–—_]+$/, '').trim())
+          .filter(l => l.length > 0);
 
-          this.isFileUploadedModal = true;
-          this.isAreaCameraActive = true;
-          this.areaCameraPhase = 'list';
+        if (lines.length > 0) {
+          this.extractedLines = lines;
+          this.startAreasReview();
         } else {
           this.extractedLines = [];
           alert('A feltöltött fájlban nem található észlelhető szövegsor. Kérjük, válaszd ki a területeket a listából!');
@@ -685,6 +745,8 @@ document.addEventListener('alpine:init', () => {
       this.areaCameraError = '';
       this.areaCameraPhase = 'live';
       this.areaScannedList = [];
+      this.areaPhotoBatches = [];
+      this.areaLastPhotoCount = 0;
       this.areaAccumulatedLines = [];
       this.isFileUploadedModal = false;
       this.areaCapturedImageUrl = '';
@@ -810,8 +872,29 @@ document.addEventListener('alpine:init', () => {
 
     cancelAreaCamera() {
       this.areaScannedList = [];
+      this.areaPhotoBatches = [];
+      this.areaLastPhotoCount = 0;
       this.isFileUploadedModal = false;
       this.stopAreaCamera();
+    },
+
+    rebuildAreaScannedListFromBatches() {
+      const seen = new Set();
+      const combined = [];
+      for (const batch of (this.areaPhotoBatches || [])) {
+        for (const text of (batch || [])) {
+          const key = text.toLowerCase().trim();
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            combined.push({
+              id: 'scan_' + Math.random().toString(36).substring(2, 9),
+              text,
+              selected: true
+            });
+          }
+        }
+      }
+      this.areaScannedList = combined;
     },
 
     async triggerCameraFocus(event) {
@@ -884,43 +967,17 @@ document.addEventListener('alpine:init', () => {
         }
       }
 
-      // 4. Szövegtisztítás és összefűzés
-      const cleanedLines = window.OcrService.extractCleanedImageLines(rawText).filter(l => l.length >= 3);
+      // 4. Tartomány-alapú szűrés képenként (első és utolsó >=65% közötti sorok + szomszédos >=32.5% sorok)
+      const filteredLines = window.OcrService.parseTeruletSorokFromImage(rawText, this.allTeruletek, 65)
+        .map(l => l.replace(/[\s:;.,\-–—_]+$/, '').trim())
+        .filter(l => l.length > 0);
 
-      // 5. Matchelés és pontszámítás
-      const newItems = cleanedLines.map(line => {
-        let bestScore = 0;
-        let bestTerulet = null;
-        if (this.allTeruletek && this.allTeruletek.length > 0) {
-          for (const t of this.allTeruletek) {
-            const sc = window.MatchingService.scoreMatch(t.nev, line);
-            if (sc > bestScore) {
-              bestScore = sc;
-              bestTerulet = t;
-            }
-            if (bestScore === 100) break;
-          }
-        }
-        return {
-          id: 'scan_' + Math.random().toString(36).substring(2, 9),
-          text: line,
-          score: bestScore,
-          bestTerulet: bestTerulet,
-          selected: bestScore >= 65
-        };
-      });
-
-      // Új képek hozzáadása a meglévő listához duplikátumok nélkül
-      if (!this.areaScannedList || this.areaScannedList.length === 0) {
-        this.areaScannedList = newItems;
-      } else {
-        const existingTexts = new Set(this.areaScannedList.map(i => i.text.toLowerCase().trim()));
-        for (const item of newItems) {
-          if (!existingTexts.has(item.text.toLowerCase().trim())) {
-            this.areaScannedList.push(item);
-          }
-        }
+      if (!Array.isArray(this.areaPhotoBatches)) {
+        this.areaPhotoBatches = [];
       }
+      this.areaPhotoBatches.push(filteredLines);
+      this.areaLastPhotoCount = filteredLines.length;
+      this.rebuildAreaScannedListFromBatches();
 
       this.isProcessingCapture = false;
       this.areaCameraPhase = 'list';
@@ -936,7 +993,11 @@ document.addEventListener('alpine:init', () => {
         this.stopAreaCamera();
         this.isFileUploadedModal = false;
       } else {
-        this.areaScannedList = [];
+        if (Array.isArray(this.areaPhotoBatches) && this.areaPhotoBatches.length > 0) {
+          this.areaPhotoBatches.pop();
+        }
+        this.areaLastPhotoCount = 0;
+        this.rebuildAreaScannedListFromBatches();
         this.areaCameraPhase = 'live';
       }
     },
@@ -1197,6 +1258,8 @@ document.addEventListener('alpine:init', () => {
       this.syncUnselectedList();
 
       this.areaAccumulatedLines = [];
+      this.areaPhotoBatches = [];
+      this.areaLastPhotoCount = 0;
       this.stopAreaCamera();
 
       this.ocrError = '';

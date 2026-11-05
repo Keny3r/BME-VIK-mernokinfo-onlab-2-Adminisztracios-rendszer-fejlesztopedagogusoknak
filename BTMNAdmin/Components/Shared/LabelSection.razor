@@ -24,24 +24,27 @@
                   EmptyText="@Metadata.EmptyText">
             <ItemContent Context="item">
                 <div class="d-flex align-items-center gap-2 w-100">
-                    <div class="label-activation-slot">
-                        @if (ActiveId == item.Id)
-                        {
-                            <button type="button" class="btn btn-success btn-sm w-100" disabled
-                                    aria-label="@($"{item.Nev} aktív")">
-                                Aktív
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-outline-success btn-sm w-100"
-                                    disabled="@(isActivating || isDeleting)"
-                                    aria-label="@($"{item.Nev} aktiválása")"
-                                    @onclick="() => ActivateAsync(item)">
-                                Aktiválás
-                            </button>
-                        }
-                    </div>
+                    @if (Metadata.HasActive)
+                    {
+                        <div class="label-activation-slot">
+                            @if (ActiveId == item.Id)
+                            {
+                                <button type="button" class="btn btn-success btn-sm w-100" disabled
+                                        aria-label="@($"{item.Nev} aktív")">
+                                    Aktív
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-outline-success btn-sm w-100"
+                                        disabled="@(isActivating || isDeleting)"
+                                        aria-label="@($"{item.Nev} aktiválása")"
+                                        @onclick="() => ActivateAsync(item)">
+                                    Aktiválás
+                                </button>
+                            }
+                        </div>
+                    }
 
                     <span class="font-medium text-break label-item-name">@item.Nev</span>
 
@@ -106,8 +109,11 @@
         if (currentUserId is null)
             return;
 
-        pedagogus = await FejlesztopedagogusService
-            .GetFejlesztopedagogusAsync(currentUserId);
+        if (Metadata.HasActive)
+        {
+            pedagogus = await FejlesztopedagogusService
+                .GetFejlesztopedagogusAsync(currentUserId);
+        }
         items = await FejlesztopedagogusService
             .GetLabelsAsync<TLabel>(currentUserId);
     }

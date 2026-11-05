@@ -32,119 +32,231 @@
       .trim();
   }
 
-  // Minták a gyermek alapadatainak kinyeréséhez (prioritási sorrendben)
-  const CHILD_EXTRACTION_RULES = [
-    {
-      key: 'forgalmiSzam',
-      patterns: [
-        /(?:forgalmi\s*sz[aá]m(?:a)?|forg\.\s*sz[aá]m)\s*[:]\s*([^\r\n]+)/i,
-        /Forgalmi szám:\s*(.+)/im
-      ]
-    },
-    {
-      key: 'iktatoszam',
-      patterns: [
-        /(?:iktat[oó]sz[aá]m(?:a)?|ikt\.\s*sz(?:[aá]m)?)\s*[:]\s*([^\r\n]+)/i,
-        /Iktatószám:\s*(.+)/im
-      ]
-    },
-    {
-      key: 'nev',
-      patterns: [
-        /(?:(?:gyermek|tanul[oó])\s+neve|n[eé]v)\s*[:]\s*([^\r\n]+)/i,
-        /Név:\s*(.+)/i
-      ]
-    },
-    {
-      key: 'anyjaNeve',
-      patterns: [
-        /(?:anyja\s*(?:le[aá]nykori\s*)?neve|anyja\s*neve?)\s*[:]\s*([^\r\n]+)/i,
-        /Anyja.*:\s*(.+)/i
-      ]
-    },
-    {
-      key: 'szuletesiHelyEsIdo',
-      patterns: [
-        /(?:sz[uü]let[eé]si\s*hely[e]?\s*(?:[eé]s|,)\s*ideje|sz[uü]let[eé]si\s*hely,\s*id[oő]|sz[uü]let[eé]si\s*id[oő]\s*[eé]s\s*hely|sz[uü]let[eé]si\s*hely[e]?\s*[:]?\s*[^\r\n,]+[,\s]+ideje)\s*[:]\s*([^\r\n]+)/i,
-        /Születési.*:\s*(.+)/i
-      ]
-    },
-    {
-      key: 'fejlesztesFormaja',
-      patterns: [
-        /(?:fejleszt[eé]s\s*form[aá]ja)\s*[:]?\s*([^\r\n]+)/i,
-        /\b(egy[eé]ni|csoportos)\b/i
-      ]
-    },
-    {
-      key: 'hetiOraszam',
-      patterns: [
-        /(?:heti\s*[oó]rasz[aá]m|heti\s*id[oő]keret)\s*[:]?\s*([^\r\n]+)/i,
-        /\b(heti\s*\d+\s*(?:[oó]ra)?)\b/i,
-        /\b(\d+\s*[oó]ra\s*[/]\s*h[eé]t)\b/i
-      ]
-    },
-    {
-      key: 'felulvizsgalatIdeje',
-      patterns: [
-        /(?:fel[uü]lvizsg[aá]lat(?:ok)?|kontroll(?:vizsg[aá]lat)?)\s*(?:ideje)?\s*[:]?\s*([^\r\n]+)/i
-      ]
+  const DEFAULT_BEALLITASOK_LABELS = {
+    nev: [
+      'Név',
+      'Gyermek neve',
+      'Tanuló neve'
+    ],
+    anyjaNeve: [
+      'Anyja neve',
+      'Anyja leánykori neve'
+    ],
+    szuletesiHelyEsIdo: [
+      'Születési helye és ideje',
+      'Születési helye, ideje',
+      'Születési hely és idő',
+      'Születési hely, idő',
+      'Születési idő és hely'
+    ],
+    forgalmiSzam: [
+      'Forgalmi szám',
+      'Forgalmi száma',
+      'Forg. szám'
+    ],
+    iktatoszam: [
+      'Iktatószám',
+      'Iktatószáma',
+      'Ikt. szám',
+      'Ikt. sz.'
+    ],
+    fejlesztesFormaja: [
+      'egyéni',
+      'csoportos'
+    ]
+  };
+
+  let currentBeallitasokLabels = cloneBeallitasokLabels(DEFAULT_BEALLITASOK_LABELS);
+
+  function cloneBeallitasokLabels(source) {
+    const src = source || DEFAULT_BEALLITASOK_LABELS;
+    return {
+      nev: Array.isArray(src.nev) ? [...src.nev] : [...DEFAULT_BEALLITASOK_LABELS.nev],
+      anyjaNeve: Array.isArray(src.anyjaNeve) ? [...src.anyjaNeve] : [...DEFAULT_BEALLITASOK_LABELS.anyjaNeve],
+      szuletesiHelyEsIdo: Array.isArray(src.szuletesiHelyEsIdo) ? [...src.szuletesiHelyEsIdo] : [...DEFAULT_BEALLITASOK_LABELS.szuletesiHelyEsIdo],
+      forgalmiSzam: Array.isArray(src.forgalmiSzam) ? [...src.forgalmiSzam] : [...DEFAULT_BEALLITASOK_LABELS.forgalmiSzam],
+      iktatoszam: Array.isArray(src.iktatoszam) ? [...src.iktatoszam] : [...DEFAULT_BEALLITASOK_LABELS.iktatoszam],
+      fejlesztesFormaja: Array.isArray(src.fejlesztesFormaja) ? [...src.fejlesztesFormaja] : [...DEFAULT_BEALLITASOK_LABELS.fejlesztesFormaja]
+    };
+  }
+
+  function setBeallitasokLabels(customLabels) {
+    if (!customLabels || typeof customLabels !== 'object') {
+      currentBeallitasokLabels = cloneBeallitasokLabels(DEFAULT_BEALLITASOK_LABELS);
+      return currentBeallitasokLabels;
     }
-  ];
+    currentBeallitasokLabels = cloneBeallitasokLabels(customLabels);
+    return currentBeallitasokLabels;
+  }
+
+  function getBeallitasokLabels() {
+    return cloneBeallitasokLabels(currentBeallitasokLabels);
+  }
+
+  // Magyar ékezet-toleráns regex építő egyszerű szöveges kifejezésből
+  function buildAccentTolerantPattern(rawLabel, isPrefix = false) {
+    if (!rawLabel) return '';
+    let trimmed = String(rawLabel).trim();
+    if (isPrefix) {
+      trimmed = trimmed.replace(/\s*:\s*$/, '').trim();
+    }
+    if (!trimmed) return '';
+
+    const hasTrailingDot = isPrefix && trimmed.endsWith('.');
+    if (hasTrailingDot) {
+      trimmed = trimmed.slice(0, -1).trim();
+    }
+
+    let pattern = '';
+    for (let i = 0; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      const lower = ch.toLowerCase();
+
+      if (/\s/.test(ch)) {
+        while (i + 1 < trimmed.length && /\s/.test(trimmed[i + 1])) {
+          i++;
+        }
+        pattern += '\\s+';
+      } else if (ch === '.' || ch === ',') {
+        while (i + 1 < trimmed.length && /\s/.test(trimmed[i + 1])) {
+          i++;
+        }
+        pattern += '\\' + ch + '\\s*';
+      } else if (lower === 'a' || lower === 'á') {
+        pattern += '[aá]';
+      } else if (lower === 'e' || lower === 'é') {
+        pattern += '[eé]';
+      } else if (lower === 'i' || lower === 'í') {
+        pattern += '[ií]';
+      } else if (lower === 'o' || lower === 'ó' || lower === 'ö' || lower === 'ő') {
+        pattern += '[oóöő]';
+      } else if (lower === 'u' || lower === 'ú' || lower === 'ü' || lower === 'ű') {
+        pattern += '[uúüű]';
+      } else if (/[.*+?^${}()|[\]\\]/.test(ch)) {
+        pattern += '\\' + ch;
+      } else {
+        pattern += ch;
+      }
+    }
+
+    if (hasTrailingDot) {
+      pattern += '\\.?';
+    }
+
+    return pattern;
+  }
+
+  function buildPrefixRegexes(labelsList) {
+    if (!Array.isArray(labelsList) || labelsList.length === 0) {
+      return [];
+    }
+
+    const validLabels = labelsList
+      .map(l => String(l || '').trim())
+      .filter(l => l.length > 0)
+      .sort((a, b) => b.length - a.length);
+
+    if (validLabels.length === 0) return [];
+
+    const patterns = validLabels
+      .map(l => buildAccentTolerantPattern(l, true))
+      .filter(p => p.length > 0);
+
+    if (patterns.length === 0) return [];
+
+    return [
+      new RegExp(`(?:${patterns.join('|')})\\s*[:]\\s*([^\\r\\n]+)`, 'i')
+    ];
+  }
+
+  function matchFejlesztesFormajaFromText(rawText, customFormak = null) {
+    if (!rawText) return null;
+    const formak = Array.isArray(customFormak)
+      ? customFormak
+      : currentBeallitasokLabels.fejlesztesFormaja;
+
+    if (!Array.isArray(formak) || formak.length === 0) return null;
+
+    const sortedFormak = formak
+      .map(f => String(f || '').trim())
+      .filter(f => f.length > 0)
+      .sort((a, b) => b.length - a.length);
+
+    if (sortedFormak.length === 0) return null;
+
+    // Először megnézzük, van-e kifejezetten "Fejlesztés formája:" sor
+    const headerMatch = rawText.match(/(?:fejleszt[eé]s\s*form[aá]ja)\s*[:]?\s*([^\r\n]+)/i);
+    if (headerMatch && headerMatch[1]) {
+      const lineMatch = findConfiguredFormaInSegment(headerMatch[1], sortedFormak);
+      if (lineMatch) return lineMatch;
+    }
+
+    return findConfiguredFormaInSegment(rawText, sortedFormak);
+  }
+
+  function findConfiguredFormaInSegment(textSegment, sortedFormak) {
+    if (!textSegment) return null;
+
+    for (const forma of sortedFormak) {
+      const pattern = buildAccentTolerantPattern(forma, false);
+      if (!pattern) continue;
+      const regex = new RegExp(`(?<![a-záéíóöőúüű0-9])(?:${pattern})(?![a-záéíóöőúüű0-9])`, 'i');
+      if (regex.test(textSegment)) {
+        return forma;
+      }
+    }
+    return null;
+  }
+
+  function getPrefixPatternsForKey(key, customLabels = null) {
+    const active = customLabels || currentBeallitasokLabels;
+    if (key && Array.isArray(active[key])) {
+      return buildPrefixRegexes(active[key]);
+    }
+    return [];
+  }
 
   // Interaktív kamera beolvasási mezők és regex szabályok sorrendben
   const CAMERA_SCAN_FIELDS = [
     {
       key: 'nev',
       label: 'Gyermek neve',
-      patterns: [
-        /(?:(?:gyermek|tanul[oó])\s+neve|n[eé]v)\s*[:]\s*([^\r\n]+)/i,
-        /Név:\s*(.+)/i
-      ]
+      get patterns() {
+        return getPrefixPatternsForKey('nev');
+      }
     },
     {
       key: 'szuletesiHelyEsIdo',
       label: 'Születési helye és ideje',
-      patterns: [
-        /(?:sz[uü]let[eé]si\s*hely[e]?\s*(?:[eé]s|,)\s*ideje|sz[uü]let[eé]si\s*hely,\s*id[oő]|sz[uü]let[eé]si\s*id[oő]\s*[eé]s\s*hely|sz[uü]let[eé]si\s*hely[e]?\s*[:]?\s*[^\r\n,]+[,\s]+ideje)\s*[:]\s*([^\r\n]+)/i,
-        /Születési.*:\s*(.+)/i
-      ]
+      get patterns() {
+        return getPrefixPatternsForKey('szuletesiHelyEsIdo');
+      }
     },
     {
       key: 'anyjaNeve',
       label: 'Anyja neve',
-      patterns: [
-        /(?:anyja\s*(?:le[aá]nykori\s*)?neve|anyja\s*neve?)\s*[:]\s*([^\r\n]+)/i,
-        /Anyja.*:\s*(.+)/i
-      ]
+      get patterns() {
+        return getPrefixPatternsForKey('anyjaNeve');
+      }
     },
     {
       key: 'forgalmiSzam',
       label: 'Forgalmi szám',
-      patterns: [
-        /(?:forgalmi\s*sz[aá]m(?:a)?|forg\.\s*sz[aá]m)\s*[:]\s*([^\r\n]+)/i,
-        /Forgalmi szám:\s*(.+)/im
-      ]
+      get patterns() {
+        return getPrefixPatternsForKey('forgalmiSzam');
+      }
     },
     {
       key: 'iktatoszam',
       label: 'Iktatószám',
-      patterns: [
-        /(?:iktat[oó]sz[aá]m(?:a)?|ikt\.\s*sz(?:[aá]m)?)\s*[:]\s*([^\r\n]+)/i,
-        /Iktatószám:\s*(.+)/im
-      ]
+      get patterns() {
+        return getPrefixPatternsForKey('iktatoszam');
+      }
     },
     {
       key: 'fejlesztesFormaja',
       label: 'Fejlesztés formája',
-      customMatcher: (rawText) => {
-        if (!rawText) return null;
-        const match = rawText.match(/\b(egy[eé]ni|csoportos)\b/i);
-        if (match) {
-          return match[1].toLowerCase().startsWith('egy') ? 'egyéni' : 'csoportos';
-        }
-        return null;
-      }
+      customMatcher: (rawText) => matchFejlesztesFormajaFromText(rawText)
     },
     {
       key: 'hetiOraszam',
@@ -181,8 +293,9 @@
       return field.customMatcher(rawText);
     }
 
-    if (field.patterns) {
-      for (const pattern of field.patterns) {
+    const patterns = field.patterns;
+    if (patterns) {
+      for (const pattern of patterns) {
         const match = rawText.match(pattern);
         if (match && match[1]) {
           const val = cleanString(match[1]);
@@ -194,7 +307,7 @@
     return null;
   }
 
-  function parseGyermekAdatai(rawText) {
+  function parseGyermekAdatai(rawText, customLabels = null) {
     const result = {
       forgalmiSzam: '',
       iktatoszam: '',
@@ -208,31 +321,12 @@
 
     if (!rawText) return result;
 
-    CHILD_EXTRACTION_RULES.forEach(({ key, patterns }) => {
+    const prefixKeys = ['forgalmiSzam', 'iktatoszam', 'nev', 'anyjaNeve', 'szuletesiHelyEsIdo'];
+    for (const key of prefixKeys) {
+      const patterns = getPrefixPatternsForKey(key, customLabels);
       for (const pattern of patterns) {
         const match = rawText.match(pattern);
         if (match && match[1]) {
-          if (key === 'felulvizsgalatIdeje') {
-            const yearMatch = match[1].match(/\b(20\d{2}\s*[/–-]\s*(?:20\d{2}|\d{2}))\b/);
-            if (yearMatch) {
-              result[key] = yearMatch[1].replace(/\s+/g, '').replace(/[–-]/g, '/');
-              break;
-            }
-          }
-          if (key === 'hetiOraszam') {
-            const numMatch = match[1].match(/\b(\d+)\b/);
-            if (numMatch) {
-              result[key] = `heti ${numMatch[1]} óra`;
-              break;
-            }
-          }
-          if (key === 'fejlesztesFormaja') {
-            const formMatch = match[1].match(/\b(egy[eé]ni|csoportos)\b/i);
-            if (formMatch) {
-              result[key] = formMatch[1].toLowerCase().startsWith('egy') ? 'egyéni' : 'csoportos';
-              break;
-            }
-          }
           const val = cleanString(match[1]);
           if (val) {
             result[key] = val;
@@ -240,7 +334,55 @@
           }
         }
       }
-    });
+    }
+
+    const customFormak = customLabels && Array.isArray(customLabels.fejlesztesFormaja)
+      ? customLabels.fejlesztesFormaja
+      : null;
+    const matchedForma = matchFejlesztesFormajaFromText(rawText, customFormak);
+    if (matchedForma) {
+      result.fejlesztesFormaja = matchedForma;
+    }
+
+    const hetiOraszamPatterns = [
+      /(?:heti\s*[oó]rasz[aá]m|heti\s*id[oő]keret)\s*[:]?\s*([^\r\n]+)/i,
+      /\b(heti\s*\d+\s*(?:[oó]ra)?)\b/i,
+      /\b(\d+\s*[oó]ra\s*[/]\s*h[eé]t)\b/i
+    ];
+    for (const pattern of hetiOraszamPatterns) {
+      const match = rawText.match(pattern);
+      if (match && match[1]) {
+        const numMatch = match[1].match(/\b(\d+)\b/);
+        if (numMatch) {
+          result.hetiOraszam = `heti ${numMatch[1]} óra`;
+          break;
+        }
+        const val = cleanString(match[1]);
+        if (val) {
+          result.hetiOraszam = val;
+          break;
+        }
+      }
+    }
+
+    const felulvizsgalatPatterns = [
+      /(?:fel[uü]lvizsg[aá]lat(?:ok)?|kontroll(?:vizsg[aá]lat)?)\s*(?:ideje)?\s*[:]?\s*([^\r\n]+)/i
+    ];
+    for (const pattern of felulvizsgalatPatterns) {
+      const match = rawText.match(pattern);
+      if (match && match[1]) {
+        const yearMatch = match[1].match(/\b(20\d{2}\s*[/–-]\s*(?:20\d{2}|\d{2}))\b/);
+        if (yearMatch) {
+          result.felulvizsgalatIdeje = yearMatch[1].replace(/\s+/g, '').replace(/[–-]/g, '/');
+          break;
+        }
+        const val = cleanString(match[1]);
+        if (val) {
+          result.felulvizsgalatIdeje = val;
+          break;
+        }
+      }
+    }
 
     return result;
   }
@@ -379,7 +521,7 @@
     }
 
     // 3. lépés: Szótáralapú másodlagos fallback, ha egyetlen felsorolásjel sem volt
-    const availableTeruletek = teruletekList || (typeof window !== 'undefined' && window.TERULETEK_DATA ? window.TERULETEK_DATA.teruletek : null);
+    const availableTeruletek = teruletekList;
     if (extractedLines.length === 0 && availableTeruletek && availableTeruletek.length > 0) {
       for (let i = 0; i < linesToProcess.length; i++) {
         const line = linesToProcess[i].trim();
@@ -446,21 +588,21 @@
   // Képes terület beolvasás logikája:
   // - Nem keresünk szekciókat, mert eleve a területeket fotózza be a felhasználó
   // - Megtisztítjuk és összefűzzük a sorokat
-  // - Minden sort összehasonlítunk a területekkel, és csak a megadott küszöböt (alapértelmezetten 65%) elérő sorokat tartjuk meg
+  // - Megkeressük az első és az utolsó olyan sort, amely eléri a küszöbértéket (alapértelmezetten 65%)
+  // - Kijelöljük az összes sort az első és az utolsó között (beleértve azokat is)
+  // - Plusz az első előtti (firstIdx - 1) és az utolsó utáni (lastIdx + 1) 1-1 sort is bevesszük, ha eléri a küszöbérték felét
   function parseTeruletSorokFromImage(rawText, teruletekList = null, threshold = 65) {
     if (!rawText) return [];
 
-    const availableTeruletek = teruletekList || (typeof window !== 'undefined' && window.TERULETEK_DATA ? window.TERULETEK_DATA.teruletek : null);
+    const availableTeruletek = teruletekList;
     if (!availableTeruletek || !Array.isArray(availableTeruletek) || availableTeruletek.length === 0) {
       return [];
     }
 
-    const cleanedLines = extractCleanedImageLines(rawText);
-    const passedLines = [];
+    const cleanedLines = extractCleanedImageLines(rawText).filter(l => l.length >= 3);
+    if (cleanedLines.length === 0) return [];
 
-    for (const line of cleanedLines) {
-      if (line.length < 3) continue;
-
+    const scoredLines = cleanedLines.map(line => {
       let bestScore = 0;
       for (const t of availableTeruletek) {
         const sc = getMatchingScore(t.nev, line);
@@ -469,10 +611,33 @@
         }
         if (bestScore === 100) break;
       }
+      return { line, score: bestScore };
+    });
 
-      if (bestScore >= threshold) {
-        passedLines.push(line);
+    let firstIdx = -1;
+    let lastIdx = -1;
+    for (let i = 0; i < scoredLines.length; i++) {
+      if (scoredLines[i].score >= threshold) {
+        if (firstIdx === -1) firstIdx = i;
+        lastIdx = i;
       }
+    }
+
+    if (firstIdx === -1) {
+      return [];
+    }
+
+    const halfThreshold = threshold / 2;
+    const startIdx = (firstIdx > 0 && scoredLines[firstIdx - 1].score >= halfThreshold)
+      ? firstIdx - 1
+      : firstIdx;
+    const endIdx = (lastIdx < scoredLines.length - 1 && scoredLines[lastIdx + 1].score >= halfThreshold)
+      ? lastIdx + 1
+      : lastIdx;
+
+    const passedLines = [];
+    for (let i = startIdx; i <= endIdx; i++) {
+      passedLines.push(scoredLines[i].line);
     }
 
     return Array.from(new Set(passedLines));
@@ -851,6 +1016,12 @@
     isNarrativeOrInvalid,
     CAMERA_SCAN_FIELDS,
     matchCameraField,
+    DEFAULT_BEALLITASOK_LABELS,
+    setBeallitasokLabels,
+    getBeallitasokLabels,
+    buildAccentTolerantPattern,
+    buildPrefixRegexes,
+    matchFejlesztesFormajaFromText,
     initTesseractWorker,
     processImageData,
     preprocessCanvasForOcr

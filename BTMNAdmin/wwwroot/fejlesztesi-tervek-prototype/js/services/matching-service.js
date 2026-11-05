@@ -69,7 +69,7 @@
   }
 
   function findRecommendations(queryText, allTeruletek = null) {
-    const list = allTeruletek || (typeof window !== 'undefined' && window.TERULETEK_DATA ? window.TERULETEK_DATA.teruletek : []);
+    const list = allTeruletek;
     if (!list || !Array.isArray(list) || list.length === 0) return [];
 
     const scored = list.map(t => ({

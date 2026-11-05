@@ -31,7 +31,19 @@ public class RegistrationService(
         db.Fejlesztopedagogusok.Add(new Fejlesztopedagogus
         {
             ApplicationUserId = await userManager.GetUserIdAsync(user),
-            Nev = "Ismeretlen pedagógus"
+            Nev = "Ismeretlen pedagógus",
+            NevLabelek = LabelMetadata.DefaultNevLabelek
+                .Select(nev => new NevLabel { Nev = nev }).ToList(),
+            AnyjaNeveLabelek = LabelMetadata.DefaultAnyjaNeveLabelek
+                .Select(nev => new AnyjaNeveLabel { Nev = nev }).ToList(),
+            SzuletesiHelyEsIdoLabelek = LabelMetadata.DefaultSzuletesiHelyEsIdoLabelek
+                .Select(nev => new SzuletesiHelyEsIdoLabel { Nev = nev }).ToList(),
+            ForgalmiSzamLabelek = LabelMetadata.DefaultForgalmiSzamLabelek
+                .Select(nev => new ForgalmiSzamLabel { Nev = nev }).ToList(),
+            IktatoszamLabelek = LabelMetadata.DefaultIktatoszamLabelek
+                .Select(nev => new IktatoszamLabel { Nev = nev }).ToList(),
+            FejlesztesFormajaLabelek = LabelMetadata.DefaultFejlesztesFormajaLabelek
+                .Select(nev => new FejlesztesFormajaLabel { Nev = nev }).ToList()
         });
 
         await db.SaveChangesAsync();

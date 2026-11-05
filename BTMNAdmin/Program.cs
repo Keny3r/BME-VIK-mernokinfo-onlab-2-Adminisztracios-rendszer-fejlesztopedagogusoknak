@@ -75,7 +75,13 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-app.MapGet("/api/fejlesztesi-tervek/profil", ProfilAPI.getProfilData)
+app.MapGet("/api/fejlesztesi-tervek/profil", ProfilAPI.GetProfilData)
+    .RequireAuthorization();
+
+app.MapGet("/api/fejlesztesi-tervek/beallitasok", BeallitasokAPI.GetBeallitasokData)
+    .RequireAuthorization();
+
+app.MapGet("/api/fejlesztesi-tervek/fejlesztesi-fa", FejlesztesiFaAPI.GetFejlesztesiFaData)
     .RequireAuthorization();
 
 app.Run(url: "http://localhost:5001");
