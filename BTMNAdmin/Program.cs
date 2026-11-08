@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using BTMNAdmin.Api;
 using BTMNAdmin.Components;
 using BTMNAdmin.Components.Account;
 using BTMNAdmin.Data;
@@ -50,6 +51,13 @@ builder.Services.AddScoped<FejlesztopedagogusService>();
 builder.Services.AddScoped<FejlesztesiFaService>();
 builder.Services.AddScoped<RegistrationService>();
 
+var llmBaseUrl = builder.Configuration.GetValue<string>("LlmService:BaseUrl") ?? "http://localhost:8000";
+builder.Services.AddHttpClient<LlmService>(client =>
+{
+    client.BaseAddress = new Uri(llmBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(35);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,4 +92,31 @@ app.MapGet("/api/fejlesztesi-tervek/beallitasok", BeallitasokAPI.GetBeallitasokD
 app.MapGet("/api/fejlesztesi-tervek/fejlesztesi-fa", FejlesztesiFaAPI.GetFejlesztesiFaData)
     .RequireAuthorization();
 
-app.Run(url: "http://localhost:5001");
+app.MapPost("/api/fejlesztesi-tervek/llm-extract", LLMServiceAPI.Extract)
+    .RequireAuthorization();
+
+// Automatikus adatbázis-migráció indításkor (SQL Server felállásának bevárásával)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    if (db.Database.IsRelational())
+    {
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            try
+            {
+                db.Database.Migrate();
+                break;
+            }
+            catch (Exception) when (attempt < 10)
+            {
+                logger.LogWarning("Várakozás az adatbázis elérhetőségére... ({Attempt}/10)", attempt);
+                Thread.Sleep(3000);
+            }
+        }
+    }
+}
+
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://*:5001";
+app.Run(urls);

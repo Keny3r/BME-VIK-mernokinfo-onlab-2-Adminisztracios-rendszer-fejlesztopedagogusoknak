@@ -50,6 +50,7 @@ document.addEventListener('alpine:init', () => {
     ocrError: '',
     hasPdfUploaded: false,
     fullOcrText: '',
+    isLlmExtracted: false,
 
     // Területek állapota
     allTeruletek: [],
@@ -219,6 +220,7 @@ document.addEventListener('alpine:init', () => {
       this.ocrProgress = 0;
       this.ocrStatus = 'Dokumentum előkészítése...';
       this.ocrError = '';
+      this.isLlmExtracted = false;
 
       try {
         const result = await window.OcrService.processDocument(file, {
@@ -230,27 +232,78 @@ document.addEventListener('alpine:init', () => {
           }
         });
 
-        // Gyermek adatok kitöltése
-        if (result.childData) {
-          if (result.childData.nev) this.gyermek.nev = result.childData.nev;
-          if (result.childData.anyjaNeve) this.gyermek.anyjaNeve = result.childData.anyjaNeve;
-          if (result.childData.szuletesiHelyEsIdo) this.gyermek.szuletesiHelyEsIdo = result.childData.szuletesiHelyEsIdo;
-          if (result.childData.forgalmiSzam) this.gyermek.forgalmiSzam = result.childData.forgalmiSzam;
-          if (result.childData.iktatoszam) this.gyermek.iktatoszam = result.childData.iktatoszam;
-          if (result.childData.fejlesztesFormaja) this.gyermek.fejlesztesFormaja = result.childData.fejlesztesFormaja;
-          if (result.childData.hetiOraszam) this.gyermek.hetiOraszam = result.childData.hetiOraszam;
-          if (result.childData.felulvizsgalatIdeje) this.gyermek.felulvizsgalatIdeje = result.childData.felulvizsgalatIdeje;
+        // Backend LLM mikroszerviz meghívása a kinyert nyers szöveggel
+        let llmSuccess = false;
+        if (result && result.fullText && result.fullText.trim()) {
+          try {
+            const response = await fetch('/api/fejlesztesi-tervek/llm-extract', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({ text: result.fullText })
+            });
+
+            if (response.ok) {
+              const llmData = await response.json();
+              if (llmData) {
+                if (llmData.nev) this.gyermek.nev = llmData.nev;
+                if (llmData.anyjaNeve) this.gyermek.anyjaNeve = llmData.anyjaNeve;
+                if (llmData.szuletesiHelyEsIdo) this.gyermek.szuletesiHelyEsIdo = llmData.szuletesiHelyEsIdo;
+                if (llmData.forgalmiSzam) this.gyermek.forgalmiSzam = llmData.forgalmiSzam;
+                if (llmData.iktatoszam) this.gyermek.iktatoszam = llmData.iktatoszam;
+                if (llmData.fejlesztesFormaja) this.gyermek.fejlesztesFormaja = llmData.fejlesztesFormaja;
+                if (llmData.hetiOraszam) this.gyermek.hetiOraszam = llmData.hetiOraszam;
+                if (llmData.felulvizsgalatIdeje) this.gyermek.felulvizsgalatIdeje = llmData.felulvizsgalatIdeje;
+
+                if (Array.isArray(llmData.fejlesztesiTeruletek) && llmData.fejlesztesiTeruletek.length > 0) {
+                  const matchedIds = new Set(llmData.fejlesztesiTeruletek);
+                  this.selectedTeruletek = this.allTeruletek
+                    .filter(t => matchedIds.has(t.id))
+                    .sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
+                  this.syncUnselectedList();
+                }
+
+                this.isLlmExtracted = true;
+                llmSuccess = true;
+              }
+            }
+          } catch (llmErr) {
+            console.warn('Backend LLM szerviz nem érhető el vagy hibát jelzett, csendes visszalépés:', llmErr);
+          }
         }
 
-        // PDF esetén a felismert területeket is eltároljuk
-        if (result.isPdf) {
-          this.hasPdfUploaded = true;
-          this.fullOcrText = result.fullText;
-          if (result.areaLines && result.areaLines.length > 0) {
-            this.extractedLines = result.areaLines;
+        // Ha az LLM sikertelen volt (vagy nem volt kinyert szöveg), a meglévő helyi fallback lép életbe
+        if (!llmSuccess) {
+          if (result.childData) {
+            if (result.childData.nev) this.gyermek.nev = result.childData.nev;
+            if (result.childData.anyjaNeve) this.gyermek.anyjaNeve = result.childData.anyjaNeve;
+            if (result.childData.szuletesiHelyEsIdo) this.gyermek.szuletesiHelyEsIdo = result.childData.szuletesiHelyEsIdo;
+            if (result.childData.forgalmiSzam) this.gyermek.forgalmiSzam = result.childData.forgalmiSzam;
+            if (result.childData.iktatoszam) this.gyermek.iktatoszam = result.childData.iktatoszam;
+            if (result.childData.fejlesztesFormaja) this.gyermek.fejlesztesFormaja = result.childData.fejlesztesFormaja;
+            if (result.childData.hetiOraszam) this.gyermek.hetiOraszam = result.childData.hetiOraszam;
+            if (result.childData.felulvizsgalatIdeje) this.gyermek.felulvizsgalatIdeje = result.childData.felulvizsgalatIdeje;
+          }
+
+          if (result.isPdf) {
+            this.hasPdfUploaded = true;
+            this.fullOcrText = result.fullText;
+            if (result.areaLines && result.areaLines.length > 0) {
+              this.extractedLines = result.areaLines;
+            }
+          } else {
+            this.hasPdfUploaded = false;
           }
         } else {
-          this.hasPdfUploaded = false;
+          if (result.isPdf) {
+            this.hasPdfUploaded = true;
+            this.fullOcrText = result.fullText;
+          } else {
+            this.hasPdfUploaded = false;
+          }
         }
 
         this.goToStep(3);
@@ -575,7 +628,10 @@ document.addEventListener('alpine:init', () => {
         window.StorageService.saveLastChildSettings(this.gyermek);
       }
 
-      if (this.hasPdfUploaded) {
+      if (this.isLlmExtracted) {
+        this.syncUnselectedList();
+        this.goToStep(6);
+      } else if (this.hasPdfUploaded) {
         this.startAreasReview();
       } else {
         this.goToStep(4);

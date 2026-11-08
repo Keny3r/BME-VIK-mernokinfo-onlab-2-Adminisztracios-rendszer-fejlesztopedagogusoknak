@@ -1,0 +1,44 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: btmn-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+
+  llm-service:
+    build:
+      context: ./LLMService
+      dockerfile: Dockerfile
+    container_name: btmn-llm-service
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-https://obdulia-untruckled-overseverely.ngrok-free.dev}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  btmn-admin:
+    build:
+      context: ./BTMNAdmin
+      dockerfile: Dockerfile
+    container_name: btmn-admin
+    depends_on:
+      - sqlserver
+      - llm-service
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=BTMNAdmin;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;"
+      LlmService__BaseUrl: "http://llm-service:8000"
+      ASPNETCORE_URLS: "http://+:5001"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
