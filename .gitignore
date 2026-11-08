@@ -12,6 +12,14 @@
 *.suo
 *.rsuser
 
+# Python virtualenv és cache
+**/.venv/
+**/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
 # Helyi titkok és fejlesztői konfiguráció
 **/.env
 **/.env.*
