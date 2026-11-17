@@ -8,9 +8,13 @@
 @rendermode InteractiveServer
 @using BTMNAdmin.Data
 @using BTMNAdmin.Components.Shared
+@using Microsoft.AspNetCore.Identity
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject FejlesztopedagogusService FejlesztopedagogusService
+@inject SubscriptionService SubscriptionService
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
 
 <PageTitle>Profil – BTMN Admin</PageTitle>
 
@@ -40,6 +44,75 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h5 mb-0">Előfizetés</h2>
+            @if (currentUser?.IsSubscriptionActive == true)
+            {
+                <span class="badge bg-success">
+                    <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Pro Előfizetés
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Próbaverzió</span>
+            }
+        </div>
+
+        @if (currentUser?.IsSubscriptionActive == true)
+        {
+            @if (currentUser.SubscriptionExpiresAt.HasValue)
+            {
+                <p class="text-muted small mb-3">
+                    <strong>Érvényes:</strong> @currentUser.SubscriptionExpiresAt.Value.ToString("yyyy. MM. dd.")-ig
+                </p>
+            }
+
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    disabled="@isProcessing"
+                    @onclick="OpenCustomerPortal">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    <span>Betöltés...</span>
+                }
+                else
+                {
+                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+                    <span>Előfizetés kezelése és lemondás</span>
+                }
+            </button>
+        }
+        else
+        {
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    disabled="@isProcessing"
+                    @onclick="StartSubscription">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    <span>Betöltés...</span>
+                }
+                else
+                {
+                    <i class="bi bi-credit-card me-1" aria-hidden="true"></i>
+                    <span>Előfizetés (4 990 Ft / év)</span>
+                }
+            </button>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3 mb-0 small" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i> @errorMessage
+            </div>
+        }
+    </div>
+</div>
+
 <FejlesztopedagogusModal IsOpen="isNameEditorOpen"
                          Nev="@(pedagogus?.Nev)"
                          OnSaved="ReloadPedagogus"
@@ -51,7 +124,10 @@
 
 @code {
     private Fejlesztopedagogus? pedagogus;
+    private ApplicationUser? currentUser;
     private bool isNameEditorOpen;
+    private bool isProcessing;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,6 +144,47 @@
         var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (userId is not null)
+        {
             pedagogus = await FejlesztopedagogusService.GetFejlesztopedagogusAsync(userId);
+            currentUser = await UserManager.FindByIdAsync(userId);
+        }
+    }
+
+    private async Task StartSubscription()
+    {
+        if (currentUser is null) return;
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            var baseUrl = NavigationManager.BaseUri.TrimEnd('/');
+            var checkoutUrl = await SubscriptionService.CreateCheckoutSessionAsync(currentUser, baseUrl);
+            NavigationManager.NavigateTo(checkoutUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            isProcessing = false;
+        }
+    }
+
+    private async Task OpenCustomerPortal()
+    {
+        if (currentUser is null) return;
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            var baseUrl = NavigationManager.BaseUri.TrimEnd('/');
+            var portalUrl = await SubscriptionService.CreateCustomerPortalSessionAsync(currentUser, baseUrl);
+            NavigationManager.NavigateTo(portalUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            isProcessing = false;
+        }
     }
 }

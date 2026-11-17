@@ -50,6 +50,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(
 builder.Services.AddScoped<FejlesztopedagogusService>();
 builder.Services.AddScoped<FejlesztesiFaService>();
 builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<SubscriptionService>();
 
 var llmBaseUrl = builder.Configuration.GetValue<string>("LlmService:BaseUrl") ?? "http://localhost:8000";
 builder.Services.AddHttpClient<LlmService>(client =>
@@ -59,6 +60,8 @@ builder.Services.AddHttpClient<LlmService>(client =>
 });
 
 var app = builder.Build();
+
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -94,6 +97,8 @@ app.MapGet("/api/fejlesztesi-tervek/fejlesztesi-fa", FejlesztesiFaAPI.GetFejlesz
 
 app.MapPost("/api/fejlesztesi-tervek/llm-extract", LLMServiceAPI.Extract)
     .RequireAuthorization();
+
+SubscriptionAPI.MapEndpoints(app);
 
 // Automatikus adatbázis-migráció indításkor (SQL Server felállásának bevárásával)
 using (var scope = app.Services.CreateScope())

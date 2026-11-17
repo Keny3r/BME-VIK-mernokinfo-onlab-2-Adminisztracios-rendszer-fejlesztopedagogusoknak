@@ -19,6 +19,9 @@ class ProfilAPI
         if (pedagogus is null)
             return Results.NotFound();
 
+        var user = await userManager.FindByIdAsync(userId);
+        var isSubscriptionActive = user?.IsSubscriptionActive ?? false;
+
         var iskolak = await pedagogusService.GetLabelsAsync<Iskola>(userId);
         var szakszolgalatok = await pedagogusService.GetLabelsAsync<Szakszolgalat>(userId);
         var tanevek = await pedagogusService.GetLabelsAsync<Tanev>(userId);
@@ -26,6 +29,7 @@ class ProfilAPI
         return Results.Ok(new
         {
             pedagogusNeve = pedagogus.Nev,
+            isSubscriptionActive = isSubscriptionActive,
             iskola = new
             {
                 active = iskolak.FirstOrDefault(x => x.Id == pedagogus.ActiveIskola)?.Nev,

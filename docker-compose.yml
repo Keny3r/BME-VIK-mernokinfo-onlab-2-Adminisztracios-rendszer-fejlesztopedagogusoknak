@@ -36,6 +36,10 @@ services:
       LlmService__BaseUrl: "http://llm-service:8000"
       ASPNETCORE_URLS: "http://+:5001"
       ASPNETCORE_ENVIRONMENT: "Development"
+      Stripe__PublishableKey: "${STRIPE_PUBLISHABLE_KEY:-}"
+      Stripe__SecretKey: "${STRIPE_SECRET_KEY:-}"
+      Stripe__PriceId: "${STRIPE_PRICE_ID:-}"
+      Stripe__WebhookSecret: "${STRIPE_WEBHOOK_SECRET:-}"
     ports:
       - "5001:5001"
     restart: unless-stopped

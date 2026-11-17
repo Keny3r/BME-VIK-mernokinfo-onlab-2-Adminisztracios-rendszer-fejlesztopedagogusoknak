@@ -65,6 +65,7 @@ document.addEventListener('alpine:init', () => {
     // PDF állapot
     isPdfGenerating: false,
     generatedFileName: '',
+    isSubscriptionActive: false,
 
     // Interaktív kamera állapot (Gyermek adatok)
     isCameraActive: false,
@@ -149,6 +150,8 @@ document.addEventListener('alpine:init', () => {
         }
 
         const profil = await response.json();
+
+        this.isSubscriptionActive = profil.isSubscriptionActive === true;
 
         this.profilSuggestions = {
           iskola: profil.iskola?.suggestions ?? [],
@@ -1274,7 +1277,9 @@ document.addEventListener('alpine:init', () => {
         };
 
         const pdfService = window.PdfService || window.PdfGenerator;
-        const filename = pdfService.generateDevelopmentPlanPdf(payload);
+        const filename = pdfService.generateDevelopmentPlanPdf(payload, {
+          watermark: !this.isSubscriptionActive
+        });
         this.generatedFileName = filename;
 
         if (window.StorageService) {

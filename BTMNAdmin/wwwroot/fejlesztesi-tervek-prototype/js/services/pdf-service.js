@@ -327,7 +327,53 @@
     );
   }
 
-  function generateDevelopmentPlanPdf(data) {
+  /**
+   * Vízjel kirajzolása minden oldalra (próbaverzió esetén)
+   */
+  function renderWatermark(doc, ctx, options = {}) {
+    const { fontName, pageWidth, pageHeight } = ctx;
+    const totalPages = doc.internal.getNumberOfPages();
+
+    const text = (options && options.watermarkText) || 'PRÓBAVERZIÓ';
+    const fontSize = (options && options.watermarkFontSize) || 72;
+    const opacity = (options && typeof options.watermarkOpacity === 'number') ? options.watermarkOpacity : 0.24;
+    const angle = (options && typeof options.watermarkAngle === 'number') ? options.watermarkAngle : 45;
+    const rad = (angle * Math.PI) / 180;
+    const cx = pageWidth / 2;
+    const cy = pageHeight / 2;
+
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      doc.saveGraphicsState();
+
+      const GState = doc.GState || (typeof window !== 'undefined' && window.jspdf && window.jspdf.GState);
+      if (typeof doc.setGState === 'function' && GState) {
+        try {
+          doc.setGState(new GState({ opacity }));
+        } catch (e) {
+          console.warn('GState beállítása nem sikerült:', e);
+        }
+      }
+
+      doc.setFont(fontName, 'bold');
+      doc.setFontSize(fontSize);
+      doc.setTextColor(190, 40, 40);
+
+      const textWidth = doc.getTextWidth(text);
+      // A nagybetűk vizuális vertikális felezőpontja ~0.35 * fontSize pontban, átszámolva mm-re
+      const capMidMm = (fontSize * 0.35) * (25.4 / 72);
+
+      // Trigonometrikus pozicionálás: a szöveg forgatott befoglaló téglalapjának felezőpontja pontosan a lap (cx, cy) pontjára kerül
+      const x = cx - (textWidth / 2) * Math.cos(rad) + capMidMm * Math.sin(rad);
+      const y = cy + (textWidth / 2) * Math.sin(rad) + capMidMm * Math.cos(rad);
+
+      doc.text(text, x, y, { angle });
+
+      doc.restoreGraphicsState();
+    }
+  }
+
+  function generateDevelopmentPlanPdf(data, options = {}) {
     const { jsPDF } = (typeof window !== 'undefined' && window.jspdf) ? window.jspdf : {};
     if (!jsPDF) {
       throw new Error('A jsPDF könyvtár nem található!');
@@ -356,6 +402,10 @@
     renderFirstPage(doc, data, ctx);
     renderTablePage(doc, data, ctx);
 
+    if (options && options.watermark) {
+      renderWatermark(doc, ctx, options);
+    }
+
     const filename = buildSafeFilename(data);
     doc.save(filename);
     return filename;
@@ -364,6 +414,7 @@
   return {
     generateDevelopmentPlanPdf,
     buildSafeFilename,
-    prepareTableBody
+    prepareTableBody,
+    renderWatermark
   };
 }));

@@ -3,8 +3,12 @@ const assert = require('node:assert/strict');
 
 // Load libraries
 globalThis.fuzzball = require('../vendor/fuzzball.umd.min.js');
+const jspdfModule = require('../vendor/jspdf.umd.min.js');
+const { jsPDF } = jspdfModule;
+globalThis.jspdf = jspdfModule;
 const MatchingService = require('../js/services/matching-service.js');
 const OcrService = require('../js/services/ocr-service.js');
+const PdfService = require('../js/services/pdf-service.js');
 const teruletekData = require('../js/data/teruletek.json').teruletek;
 
 test('MatchingService - scoreMatch correctly scores exact and partial matches', () => {
@@ -337,6 +341,87 @@ test('OcrService - configurable Beállítások labels support custom prefixes, O
     OcrService.setBeallitasokLabels(OcrService.DEFAULT_BEALLITASOK_LABELS);
   }
 });
+
+test('PdfService - renderWatermark renders default PRÓBAVERZIÓ watermark centered on all pages with 0.24 opacity', () => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  doc.addPage(); // 2 pages total
+
+  const ctx = {
+    fontName: 'helvetica',
+    pageWidth: doc.internal.pageSize.getWidth(),
+    pageHeight: doc.internal.pageSize.getHeight()
+  };
+
+  PdfService.renderWatermark(doc, ctx);
+  const pdfOutput = doc.output();
+
+  // Watermark text check
+  assert.ok(pdfOutput.includes('PRÓBAVERZIÓ'), 'PDF output should contain PRÓBAVERZIÓ');
+  assert.ok(!pdfOutput.includes('NEM HIVATALOS MINTA'), 'PDF output should not contain old long watermark text');
+
+  // Opacity 0.24 check
+  assert.ok(pdfOutput.includes('0.24'), 'PDF output should specify 0.24 opacity in graphic state');
+
+  // Verify geometric centering on page 1
+  const match = pdfOutput.match(/([-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+Tm)/);
+  assert.ok(match, 'Tm matrix should be present in PDF stream');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(72);
+  const [a, b, c, d, e, f] = match[1].trim().split(/\s+/).map(Number);
+  const textWidth = doc.getTextWidth('PRÓBAVERZIÓ');
+  const textWidthPt = (textWidth * 72) / 25.4;
+  const capMidPt = 72 * 0.35;
+
+  const midX_pdf = a * (textWidthPt / 2) + c * capMidPt + e;
+  const midY_pdf = b * (textWidthPt / 2) + d * capMidPt + f;
+  const targetMidX_pdf = (ctx.pageWidth / 2) * (72 / 25.4);
+  const targetMidY_pdf = (ctx.pageHeight / 2) * (72 / 25.4);
+
+  // Geometric center of watermark bounding box must match page center (< 0.001 pt tolerance)
+  assert.ok(Math.abs(midX_pdf - targetMidX_pdf) < 0.001, `Watermark X center mismatch: ${midX_pdf} vs ${targetMidX_pdf}`);
+  assert.ok(Math.abs(midY_pdf - targetMidY_pdf) < 0.001, `Watermark Y center mismatch: ${midY_pdf} vs ${targetMidY_pdf}`);
+});
+
+test('PdfService - renderWatermark supports custom text, font size, opacity, and angle', () => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const ctx = {
+    fontName: 'helvetica',
+    pageWidth: doc.internal.pageSize.getWidth(),
+    pageHeight: doc.internal.pageSize.getHeight()
+  };
+
+  PdfService.renderWatermark(doc, ctx, {
+    watermarkText: 'EGYEDI VÍZJEL',
+    watermarkFontSize: 60,
+    watermarkOpacity: 0.3,
+    watermarkAngle: 30
+  });
+
+  const pdfOutput = doc.output();
+  assert.ok(pdfOutput.includes('EGYEDI VÍZJEL'), 'Should render custom watermark text');
+  assert.ok(pdfOutput.includes('0.3'), 'Should use custom opacity');
+
+  // Verify geometric centering with angle=30 and fontSize=60
+  const match = pdfOutput.match(/([-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+[-\d\.]+\s+Tm)/);
+  assert.ok(match, 'Tm matrix should be present');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(60);
+  const [a, b, c, d, e, f] = match[1].trim().split(/\s+/).map(Number);
+  const textWidth = doc.getTextWidth('EGYEDI VÍZJEL');
+  const textWidthPt = (textWidth * 72) / 25.4;
+  const capMidPt = 60 * 0.35;
+
+  const midX_pdf = a * (textWidthPt / 2) + c * capMidPt + e;
+  const midY_pdf = b * (textWidthPt / 2) + d * capMidPt + f;
+  const targetMidX_pdf = (ctx.pageWidth / 2) * (72 / 25.4);
+  const targetMidY_pdf = (ctx.pageHeight / 2) * (72 / 25.4);
+
+  assert.ok(Math.abs(midX_pdf - targetMidX_pdf) < 0.001, `Watermark X center mismatch: ${midX_pdf} vs ${targetMidX_pdf}`);
+  assert.ok(Math.abs(midY_pdf - targetMidY_pdf) < 0.001, `Watermark Y center mismatch: ${midY_pdf} vs ${targetMidY_pdf}`);
+});
+
 
 
 
